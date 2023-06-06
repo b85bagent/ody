@@ -183,3 +183,4 @@ func DeleteIndex(client *opensearch.Client, index []string) {
 	defer deleteIndexResponse.Body.Close()
 
 }
+
