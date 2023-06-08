@@ -60,7 +60,7 @@ func NewRabbitMQSimple(queueName string) *RabbitMQ {
 	return rabbitmq
 }
 
-//直接模式隊列生產
+//Simple Mode Producer
 func (r *RabbitMQ) PublishSimple(message string) {
 	//1.申請隊列，如果隊列不存在會自動創建，存在則跳過創建
 	_, err := r.channel.QueueDeclare(
@@ -86,7 +86,7 @@ func (r *RabbitMQ) PublishSimple(message string) {
 		})
 }
 
-//simple 模式下消費者
+//Simple Mode Consumer
 func (r *RabbitMQ) ConsumeSimple() {
 	//1.申請隊列，如果隊列不存在會自動創建，存在則跳過創建
 	q, err := r.channel.QueueDeclare(

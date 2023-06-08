@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -21,15 +22,15 @@ const IndexName = "go-test-index1"
 //建立opensearch Client端
 func New() *opensearch.Client {
 
-	var urls = []string{"https://localhost:9200"} // 多urls請用逗號隔開
+	var urls = []string{"https://10.11.233.102:9200"} // 多urls請用逗號隔開
 
 	client, err := opensearch.NewClient(opensearch.Config{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		},
 		Addresses: urls,
-		Username:  "admin", // For testing only. Don't store credentials in code.
-		Password:  "admin",
+		Username:  "admin",
+		Password:  "systex123!",
 	})
 
 	if err != nil {
@@ -65,13 +66,14 @@ func CreateIndex(client *opensearch.Client, IndexName string) error {
 		fmt.Println("failed to create index ", errCreateIndex)
 		return errCreateIndex
 	}
+	defer createIndexResponse.Body.Close()
 
 	fmt.Println(createIndexResponse)
 	return nil
 }
 
 //單一插入
-func SingleInsert(client *opensearch.Client, document string) {
+func SingleInsert(client *opensearch.Client, document string) error {
 	req := opensearchapi.IndexRequest{
 		Index: IndexName,
 		Body:  strings.NewReader(document),
@@ -79,14 +81,17 @@ func SingleInsert(client *opensearch.Client, document string) {
 	insertResponse, err := req.Do(context.Background(), client.Transport)
 	if err != nil {
 		fmt.Println("failed to insert document: ", err)
+		return err
 	}
+	defer insertResponse.Body.Close()
 
 	fmt.Println(insertResponse)
 	fmt.Println("add success")
+	return nil
 }
 
 //Search something
-func Search(client *opensearch.Client, key, value string) (result model.SearchResponse) {
+func Search(client *opensearch.Client, key, value string) (result model.SearchResponse, err error) {
 
 	s := map[string]interface{}{
 		// "size": 5,
@@ -100,37 +105,36 @@ func Search(client *opensearch.Client, key, value string) (result model.SearchRe
 	content, errMarshal := json.Marshal(s)
 	if errMarshal != nil {
 		fmt.Println(errMarshal)
-		return
+		return result, errMarshal
 	}
 
 	search := opensearchapi.SearchRequest{
 		Body: bytes.NewReader(content),
 	}
 
-	searchResponse, err := search.Do(context.Background(), client)
-	if err != nil {
-		fmt.Println("failed to search document ", err)
-		return
+	searchResponse, errSearch := search.Do(context.Background(), client)
+	if errSearch != nil {
+		fmt.Println("failed to search document ", errSearch)
+		return result, errSearch
 	}
-
-	fmt.Println("main: ", searchResponse)
 
 	defer searchResponse.Body.Close()
 
 	json.NewDecoder(searchResponse.Body).Decode(&result)
 
-	return result
+	return result, nil
 }
 
 //Bulk Insert
-func BulkInsert(client *opensearch.Client, documents string) bool {
+func BulkInsert(client *opensearch.Client, documents string) error {
 
 	blk, errBulk := client.Bulk(strings.NewReader(documents))
 
 	if errBulk != nil {
 		fmt.Println("failed to perform bulk operations", errBulk)
-		return true
+		return errBulk
 	}
+	defer blk.Body.Close()
 
 	fmt.Println("Performing bulk operations")
 	fmt.Println(blk)
@@ -140,19 +144,20 @@ func BulkInsert(client *opensearch.Client, documents string) bool {
 
 		json.NewDecoder(blk.Body).Decode(&errBulk)
 
-		fmt.Println(errBulk.Error.Reason)
-
-		return false
+		errBody := errors.New(errBulk.Error.Reason)
+		return errBody
 	}
 
-	body, err := io.ReadAll(blk.Body)
-	if err != nil {
-		log.Printf("error occurred: [%s]", err.Error())
+	body, errReadAll := io.ReadAll(blk.Body)
+	if errReadAll != nil {
+		log.Printf("error occurred: [%s]", errReadAll.Error())
+		return errReadAll
 	}
 
 	var response model.BulkCreateResponse
 	if errUnmarshal := json.Unmarshal(body, &response); errUnmarshal != nil {
 		log.Printf("error Unmarshal blkResponse: [%s]", errUnmarshal.Error())
+		return errUnmarshal
 	}
 
 	for _, item := range response.Items {
@@ -163,24 +168,24 @@ func BulkInsert(client *opensearch.Client, documents string) bool {
 		}
 	}
 
-	return blk.IsError()
+	return nil
 }
 
 //delete Index
-func DeleteIndex(client *opensearch.Client, index []string) {
+func DeleteIndex(client *opensearch.Client, index []string) error {
 	deleteIndex := opensearchapi.IndicesDeleteRequest{
 		Index: index,
 	}
 
-	deleteIndexResponse, err := deleteIndex.Do(context.Background(), client.Transport)
-	if err != nil {
-		fmt.Println("failed to delete index ", err)
-		return
+	deleteIndexResponse, errDeleteIndex := deleteIndex.Do(context.Background(), client.Transport)
+	if errDeleteIndex != nil {
+		fmt.Println("failed to delete index ", errDeleteIndex)
+		return errDeleteIndex
 	}
-
-	fmt.Println("Deleting the index")
-	fmt.Println(deleteIndexResponse)
 	defer deleteIndexResponse.Body.Close()
 
-}
+	fmt.Println(deleteIndexResponse)
 
+	return nil
+
+}

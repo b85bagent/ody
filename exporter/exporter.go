@@ -79,6 +79,7 @@ func RunExporter() {
 			Help: fmt.Sprintf("cpu2 usage for %s", target),
 		})
 	}
+	fmt.Println("exporter: ", exporter.cpuUsageMetrics)
 
 	prometheus.MustRegister(exporter)
 
