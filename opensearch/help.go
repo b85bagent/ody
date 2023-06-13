@@ -1,19 +1,32 @@
 package opensearch
 
-import "Agent/model"
+import (
+	"Agent/model"
+)
 
-
-func DataMix(data []interface{}, Action *model.Action, ContentDetail *model.ContentDetail) []interface{} {
+func dataMix(data []interface{}, Action any, ContentDetail any) []interface{} {
 	data = append(data, Action)
 	data = append(data, ContentDetail)
 
 	return data
 }
 
-func ActionCreate(index string) *model.Action {
-	return &model.Action{Create: &model.CreateDetail{Index: index}}
+func actionCreate(index string) *model.ActionCreate {
+	return &model.ActionCreate{Create: &model.IndexDetail{Index: index}}
 }
 
-func ContentDetailCreate(title, director, year string) *model.ContentDetail {
-	return &model.ContentDetail{Title: title, Director: director, Year: year}
+func contentDetailCreate(data map[string]interface{}) *model.InsertData {
+	return &model.InsertData{Data: data}
+}
+
+func actionDelete(index, id string) *model.ActionDelete {
+	return &model.ActionDelete{Delete: &model.IndexAndIDDetail{Index: index, Id: id}}
+}
+
+func actionUpdate(index, id string) *model.ActionUpdate {
+	return &model.ActionUpdate{Update: &model.IndexAndIDDetail{Index: index, Id: id}}
+}
+
+func contentDetailUpdate(data model.InsertData) *model.UpdateData {
+	return &model.UpdateData{Doc: data}
 }

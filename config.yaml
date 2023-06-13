@@ -1,0 +1,9 @@
+#Opensearch 
+opensearch:
+  One:
+    host: ["https://10.11.233.102:9200"]
+    username: "admin"
+    password: "systex123!"
+
+#RabbitMQ
+

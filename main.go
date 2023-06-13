@@ -1,112 +1,99 @@
 package main
 
 import (
-	bec "Agent/blackbox_exporter/config"
-	bep "Agent/blackbox_exporter/prober"
-	"context"
+	"Agent/model"
+	"Agent/opensearch"
+	"Agent/pkg"
+	"Agent/server"
 	"fmt"
 	"log"
 	"time"
-
-	logger "github.com/go-kit/log"
-
-	"github.com/prometheus/client_golang/prometheus"
 )
 
-//先定义结构体，这是一个集群的指标采集器
-type HostMonitor struct {
-	cpuDesc    *prometheus.Desc
-	memDesc    *prometheus.Desc
-	ioDesc     *prometheus.Desc
-	labelVaues []string
-}
+const osIndex = "lex-test66"
 
-//创建结构体及对应的指标信息
-func NewHostMonitor() *HostMonitor {
-	return &HostMonitor{
-		cpuDesc: prometheus.NewDesc(
-			"host_cpu",
-			"get host cpu",
-			//动态标签key列表
-			[]string{"instance_id", "instance_name"},
-			//静态标签
-			prometheus.Labels{"module": "cpu"},
-		),
-		memDesc: prometheus.NewDesc(
-			"host_mem",
-			"get host mem",
-			//动态标签key列表
-			[]string{"instance_id", "instance_name"},
-			//静态标签
-			prometheus.Labels{"module": "mem"},
-		),
-		ioDesc: prometheus.NewDesc(
-			"host_io",
-			"get host io",
-			//动态标签key列表
-			[]string{"instance_id", "instance_name"},
-			//静态标签
-			prometheus.Labels{"module": "io"},
-		),
-		labelVaues: []string{"myhost", "Lex"},
+func bulkPrevious() {
+	var data model.BulkPrevious
+	// data.Delete = map[string]string{
+	// 	"lex-test66": "EJazs4gBM-XHgcOmDej3",
+	// }
+
+	if err := opensearch.BulkPrevious("delete", data); err != nil {
+		log.Println(err)
 	}
+
 }
 
-//实现Describe接口，传递指标描述符到channel
-func (h *HostMonitor) Describe(ch chan<- *prometheus.Desc) {
-	ch <- h.cpuDesc
-	ch <- h.memDesc
-	ch <- h.ioDesc
-}
-
-//实现collect接口，将执行抓取函数并返回数据
-func (h *HostMonitor) Collect(ch chan<- prometheus.Metric) {
-	ch <- prometheus.MustNewConstMetric(h.cpuDesc, prometheus.GaugeValue, 70, h.labelVaues...)
-	ch <- prometheus.MustNewConstMetric(h.memDesc, prometheus.GaugeValue, 30, h.labelVaues...)
-	ch <- prometheus.MustNewConstMetric(h.ioDesc, prometheus.GaugeValue, 90, h.labelVaues...)
-}
-
-//实现http 访问
 func main() {
-	// // 创建自定义注册表
-	// registry := prometheus.NewRegistry()
-	// //添加process到自定义注册表
-	// //registry.MustRegister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
-	// //注册自定义采集器
-	// registry.MustRegister(NewHostMonitor())
-	// fmt.Println(registry)
-	// //暴露metrics
-	// http.Handle("/metrics", promhttp.HandlerFor(registry, promhttp.HandlerOpts{Registry: registry}))
-	// http.ListenAndServe(":9090", nil)
+	pkg.AutoLoader()
+	bulkPrevious()
+	return
 
-	// fmt.Println(123)
-
-	target := "https://tw.yahoo.com"
-	registry := prometheus.NewPedanticRegistry()
-	t := bec.GRPCProbe{
-		IPProtocolFallback: false,
-		Service:            "service3",
+	a := model.InsertData{
+		Data: map[string]interface{}{"host": "10.40.192.277"},
 	}
 
-	result := bep.ProbeGRPC(context.Background(), target,
-		bec.Module{Timeout: time.Second, GRPC: t}, registry, logger.NewNopLogger())
+	id := "8ZY8s4gBM-XHgcOmCOcK"
 
-	registry.MustRegister(NewHostMonitor())
-
-	metrics, err := registry.Gather()
+	result, err := opensearch.BulkUpdate(osIndex, id, a)
 	if err != nil {
-		log.Printf("Could not gather metrics: %v", err)
+		log.Fatal(err)
+	}
+	fmt.Println(result)
+
+	if err := opensearch.BulkExecute(result); err != nil {
+		fmt.Println(err)
 	}
 
-	// 打印收集到的指标数据
-	for _, mf := range metrics {
-		fmt.Printf("Metric: %s, %.1f\n", *mf.Name, *mf.Metric[0].Gauge.Value)
+}
 
+func search() {
+	os, ok := server.GetServerInstance().GetOpensearch()["One"]
+	if !ok {
+		fmt.Println("No OK")
+		return
+	}
+	//Search key
+	result, err := opensearch.Search(os, "lex-test", "*", "8080")
+	if err != nil {
+		fmt.Println("No OK")
+		return
 	}
 
-	if result {
-		fmt.Println("Probe succeeded")
-	} else {
-		fmt.Println("Probe failed")
+	log.Println(result.Hits.Hits[0].Source)
+}
+
+func create() {
+	a := map[string]interface{}{
+		"host": "10.40.192.213",
+		"http": map[string]interface{}{
+			"method":  "POST",
+			"request": 1669,
+			"version": "HTTP/1.1",
+		},
+		"url": map[string]interface{}{
+			"domain": "10.11.233.11",
+			"path":   "/",
+			"port":   8080,
+		},
+		"timestamp": time.Now(),
 	}
+
+	result, err := opensearch.BulkCreate(osIndex, a)
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Println("1 result: ", result)
+
+}
+
+func delete() {
+	os, ok := server.GetServerInstance().GetOpensearch()["One"]
+	if !ok {
+		fmt.Println("No OK")
+		return
+	}
+
+	deleteIndex := []string{"lex-test66"}
+	opensearch.SingleDeleteIndex(os, deleteIndex)
 }

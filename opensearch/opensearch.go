@@ -2,58 +2,37 @@ package opensearch
 
 import (
 	"Agent/model"
+	"Agent/server"
 	"bytes"
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"log"
-	"net/http"
 	"strings"
 
 	"github.com/opensearch-project/opensearch-go"
 	"github.com/opensearch-project/opensearch-go/opensearchapi"
 )
 
-const IndexName = "go-test-index1"
-
-//建立opensearch Client端
-func New() *opensearch.Client {
-
-	var urls = []string{"https://10.11.233.102:9200"} // 多urls請用逗號隔開
-
-	client, err := opensearch.NewClient(opensearch.Config{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		},
-		Addresses: urls,
-		Username:  "admin",
-		Password:  "systex123!",
-	})
-
-	if err != nil {
-		fmt.Println("無法建立 OpenSearch 客戶端:", err)
-		return nil
-	}
-
-	// Print OpenSearch version information on console.
-	fmt.Println(client.Info())
-
-	return client
-}
-
 //建立Index
 func CreateIndex(client *opensearch.Client, IndexName string) error {
 	//設定Index
 	settings := strings.NewReader(`{
-	'settings': {
-	    'index': {
-	        'number_of_shards': 1,
-	        'number_of_replicas': 2
+		"settings": {
+	    	"index": {
+	        	"number_of_shards": 1,
+	        	"number_of_replicas": 2
 	        }
-	    }
+	    },
+		"mappings": {
+			"properties": {
+				"timestamp": {
+					"type": "date"
+				}
+			}
+		}
 	}`)
 
 	res := opensearchapi.IndicesCreateRequest{
@@ -66,6 +45,7 @@ func CreateIndex(client *opensearch.Client, IndexName string) error {
 		fmt.Println("failed to create index ", errCreateIndex)
 		return errCreateIndex
 	}
+
 	defer createIndexResponse.Body.Close()
 
 	fmt.Println(createIndexResponse)
@@ -73,9 +53,9 @@ func CreateIndex(client *opensearch.Client, IndexName string) error {
 }
 
 //單一插入
-func SingleInsert(client *opensearch.Client, document string) error {
+func SingleInsert(client *opensearch.Client, index, document string) error {
 	req := opensearchapi.IndexRequest{
-		Index: IndexName,
+		Index: index,
 		Body:  strings.NewReader(document),
 	}
 	insertResponse, err := req.Do(context.Background(), client.Transport)
@@ -90,45 +70,203 @@ func SingleInsert(client *opensearch.Client, document string) error {
 	return nil
 }
 
+//單一刪除
+func SingleDeleteIndex(client *opensearch.Client, index []string) error {
+	deleteIndex := opensearchapi.IndicesDeleteRequest{
+		Index: index,
+	}
+
+	deleteIndexResponse, errDeleteIndex := deleteIndex.Do(context.Background(), client.Transport)
+	if errDeleteIndex != nil {
+		fmt.Println("failed to delete index ", errDeleteIndex)
+		return errDeleteIndex
+	}
+	defer deleteIndexResponse.Body.Close()
+
+	fmt.Println(deleteIndexResponse)
+
+	return nil
+
+}
+
 //Search something
-func Search(client *opensearch.Client, key, value string) (result model.SearchResponse, err error) {
+func Search(client *opensearch.Client, Index, key, value string) (result model.SearchResponse, err error) {
 
-	s := map[string]interface{}{
-		// "size": 5,
-		"query": map[string]interface{}{
-			"match": map[string]interface{}{
-				key: value,
-			},
-		},
+	var res *opensearchapi.Response
+
+	if key != "" && value != "" {
+		queryString := fmt.Sprintf(`%s: "%s"`, "*", value)
+
+		res, err = client.Search(
+			client.Search.WithIndex(Index),
+
+			client.Search.WithQuery(queryString),
+		)
+		if err != nil {
+			log.Printf("error Search: [%s]", err.Error())
+		}
+	} else {
+		res, err = client.Search(
+			client.Search.WithIndex(Index),
+			client.Search.WithSize(5),
+		)
+		if err != nil {
+			log.Printf("error Search: [%s]", err.Error())
+		}
 	}
 
-	content, errMarshal := json.Marshal(s)
-	if errMarshal != nil {
-		fmt.Println(errMarshal)
-		return result, errMarshal
+	if err != nil {
+		log.Printf("error occurred: [%s]", err.Error())
 	}
 
-	search := opensearchapi.SearchRequest{
-		Body: bytes.NewReader(content),
-	}
+	log.Printf("response: [%+v]", res)
 
-	searchResponse, errSearch := search.Do(context.Background(), client)
-	if errSearch != nil {
-		fmt.Println("failed to search document ", errSearch)
-		return result, errSearch
-	}
-
-	defer searchResponse.Body.Close()
-
-	json.NewDecoder(searchResponse.Body).Decode(&result)
+	json.NewDecoder(res.Body).Decode(&result)
 
 	return result, nil
 }
 
-//Bulk Insert
-func BulkInsert(client *opensearch.Client, documents string) error {
+func BulkPrevious(mode string, data model.BulkPrevious) error {
+
+	switch mode {
+	case "create":
+		if data.Create.Data == nil || data.Create.Index == "" {
+			errCreateData := errors.New("create issue is illegal,please check it ")
+			return errCreateData
+		}
+		result, errCreate := BulkCreate(data.Create.Index, data.Create.Data)
+		if errCreate != nil {
+			return errCreate
+		}
+
+		if errExecute := BulkExecute(result); errExecute != nil {
+			return errExecute
+		}
+
+	case "update":
+		if data.Update.Id == "" || data.Update.Index == "" || len(data.Update.Data.Data) == 0 {
+			errCreateData := errors.New("update issue is illegal,please check it ")
+			return errCreateData
+		}
+		result, errCreate := BulkUpdate(data.Update.Index, data.Update.Id, data.Update.Data)
+		if errCreate != nil {
+			return errCreate
+		}
+
+		if errExecute := BulkExecute(result); errExecute != nil {
+			return errExecute
+		}
+	case "delete":
+		if len(data.Delete) == 0 {
+			errCreateData := errors.New("delete issue is illegal,please check it")
+			return errCreateData
+		}
+		result, errCreate := BulkDelete(data.Delete)
+		if errCreate != nil {
+			return errCreate
+		}
+
+		if errExecute := BulkExecute(result); errExecute != nil {
+			return errExecute
+		}
+	default:
+		return errors.New("invalid mode")
+	}
+
+	fmt.Println("BulkPrevious End")
+
+	return nil
+
+}
+
+func BulkDelete(Delete map[string]string) (result string, err error) {
+
+	r := []interface{}{}
+
+	for key, value := range Delete {
+		deleteIndex := actionDelete(key, value)
+		r = append(r, deleteIndex)
+	}
+
+	buf := &bytes.Buffer{}
+	enc := json.NewEncoder(buf)
+
+	for _, v := range r {
+		if errEncode := enc.Encode(v); errEncode != nil {
+			log.Fatal(err)
+			return "", errEncode
+		}
+	}
+
+	return buf.String(), nil
+
+}
+
+func BulkCreate(index string, data map[string]interface{}) (result string, err error) {
+
+	r := []interface{}{}
+
+	Action := actionCreate(index)
+
+	ContentDetail1 := contentDetailCreate(data)
+
+	r = dataMix(r, Action, ContentDetail1)
+
+	buf := &bytes.Buffer{}
+	enc := json.NewEncoder(buf)
+
+	for _, v := range r {
+		if errEncode := enc.Encode(v); errEncode != nil {
+			log.Fatal(err)
+			return "", errEncode
+		}
+	}
+
+	fmt.Println(buf.String())
+
+	return buf.String(), nil
+
+}
+
+func BulkUpdate(index, id string, data model.InsertData) (result string, err error) {
+
+	r := []interface{}{}
+
+	Action := actionUpdate(index, id)
+
+	ContentDetail1 := contentDetailUpdate(data)
+
+	r = dataMix(r, Action, ContentDetail1)
+
+	buf := &bytes.Buffer{}
+	enc := json.NewEncoder(buf)
+
+	for _, v := range r {
+		if errEncode := enc.Encode(v); errEncode != nil {
+			log.Fatal(err)
+			return "", errEncode
+		}
+	}
+
+	fmt.Println(buf.String())
+
+	return buf.String(), nil
+
+}
+
+//Bulk Execute
+func BulkExecute(documents string) error {
+
+	client, ok := server.GetServerInstance().GetOpensearch()["One"]
+	if !ok {
+		fmt.Println("No OK")
+		return errors.New("No OK")
+	}
+
+	// fmt.Println("documents: ", documents)
 
 	blk, errBulk := client.Bulk(strings.NewReader(documents))
+	defer blk.Body.Close()
 
 	if errBulk != nil {
 		fmt.Println("failed to perform bulk operations", errBulk)
@@ -169,23 +307,4 @@ func BulkInsert(client *opensearch.Client, documents string) error {
 	}
 
 	return nil
-}
-
-//delete Index
-func DeleteIndex(client *opensearch.Client, index []string) error {
-	deleteIndex := opensearchapi.IndicesDeleteRequest{
-		Index: index,
-	}
-
-	deleteIndexResponse, errDeleteIndex := deleteIndex.Do(context.Background(), client.Transport)
-	if errDeleteIndex != nil {
-		fmt.Println("failed to delete index ", errDeleteIndex)
-		return errDeleteIndex
-	}
-	defer deleteIndexResponse.Body.Close()
-
-	fmt.Println(deleteIndexResponse)
-
-	return nil
-
 }
