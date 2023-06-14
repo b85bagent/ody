@@ -1,25 +1,25 @@
-module:
-  name: snmp
-  timeout: 10s
-  retries: 3
-  walk: true
-  auth:
-    community: public
-targets:
-  - system_memory_usage
-  - interface_in_traffic
-  - interface_out_traffic
-  - cpu_usage
-metrics:
-  - name: system_memory_usage
-    oid: "1.3.6.1.4.1.2021.4.5.0"
-  - name: interface_in_traffic
-    oid: "1.3.6.1.2.1.2.2.1.10"
-    index: ["1", "2", "3"]
-  - name: interface_out_traffic
-    oid: "1.3.6.1.2.1.2.2.1.16"
-    index: ["1", "2", "3"]
-  - name: cpu_usage
-    cpu_usage:
-      cpu1: 1
-      cpu2: 2
+scrape_configs:
+  - job_name: icmp-prob
+    scrape_interval: 90s
+    metrics_path: /probe
+    params:
+      module: [icmp]
+    static_configs:
+    - targets:
+      - https://example.com
+    - targets:
+      - 10.11.179.9
+      - 10.11.233.103
+      - 10.40.192.145
+      - 10.11.179.18
+      labels:
+      check: ping
+    - targets:
+      - 10.11.5.249
+      labels:
+      check: ping
+      tag: hpswitch
+    - targets:
+      - 10.11.4.1
+      labels:
+      check: ping

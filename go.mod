@@ -5,7 +5,6 @@ go 1.18
 require (
 	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137
 	github.com/andybalholm/brotli v1.0.5
-	github.com/b85bagent/opensearch v0.0.0-20230614040350-c4783166192d
 	github.com/go-kit/log v0.2.1
 	github.com/miekg/dns v1.1.54
 	github.com/opensearch-project/opensearch-go v1.1.0
@@ -29,6 +28,7 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
+	github.com/stretchr/testify v1.8.2 // indirect
 	golang.org/x/mod v0.8.0 // indirect
 	golang.org/x/oauth2 v0.8.0 // indirect
 	golang.org/x/sys v0.9.0 // indirect
