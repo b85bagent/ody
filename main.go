@@ -1,49 +1,102 @@
 package main
 
 import (
-	"Agent/model"
-	"Agent/opensearch"
 	"Agent/pkg"
 	"Agent/server"
 	"fmt"
 	"log"
 	"time"
+
+	"github.com/b85bagent/opensearch"
 )
 
-const osIndex = "lex-test66"
+const osIndex = "lex-test14"
 
-func bulkPrevious() {
-	var data model.BulkPrevious
-	// data.Delete = map[string]string{
-	// 	"lex-test66": "EJazs4gBM-XHgcOmDej3",
-	// }
+var data opensearch.BulkPreviousUse
 
-	if err := opensearch.BulkPrevious("delete", data); err != nil {
+func bulkCreate() {
+
+	os, ok := server.GetServerInstance().GetOpensearch()["One"]
+	if !ok {
+		fmt.Println("No OK")
+		return
+	}
+
+	data.Create.Data = map[string]interface{}{
+		"host": "10.11.22.333",
+		"http": map[string]interface{}{
+			"method":  "POST",
+			"request": 3369,
+			"version": "HTTP/1.1",
+		},
+		"url": map[string]interface{}{
+			"domain": "10.42.11.255",
+			"path":   "/",
+			"port":   8888,
+		},
+		"timestamp": time.Now(),
+	}
+
+	data.Create.Index = osIndex
+
+	result, err := opensearch.BulkPrevious(os, "create", data)
+	if err != nil {
 		log.Println(err)
 	}
 
+	fmt.Println(result)
+
 }
 
-func main() {
-	pkg.AutoLoader()
-	bulkPrevious()
-	return
+func bulkUpdate() {
 
-	a := model.InsertData{
-		Data: map[string]interface{}{"host": "10.40.192.277"},
+	os, ok := server.GetServerInstance().GetOpensearch()["One"]
+	if !ok {
+		fmt.Println("No OK")
+		return
 	}
 
-	id := "8ZY8s4gBM-XHgcOmCOcK"
+	var data opensearch.BulkPreviousUse
+	data.Update.Data = opensearch.InsertData{
+		Data: map[string]interface{}{"host": "10.20.30.40"},
+	}
+	data.Update.Index = osIndex
+	data.Update.Id = "LZYIuIgBM-XHgcOmeujd"
 
-	result, err := opensearch.BulkUpdate(osIndex, id, a)
+	result, err := opensearch.BulkPrevious(os, "update", data)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	fmt.Println(result)
 
-	if err := opensearch.BulkExecute(result); err != nil {
-		fmt.Println(err)
+}
+
+func bulkDelete() {
+
+	os, ok := server.GetServerInstance().GetOpensearch()["One"]
+	if !ok {
+		fmt.Println("No OK")
+		return
 	}
+
+	data.Delete = map[string]string{
+		"lex-test14": "L5YOuIgBM-XHgcOmpujw",
+	}
+
+	result, err := opensearch.BulkPrevious(os, "delete", data)
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Println(result)
+}
+
+func main() {
+	// 載入Server
+	pkg.AutoLoader()
+	search()
+	// bulkCreate()
+	// bulkUpdate()
+	// bulkDelete()
 
 }
 
@@ -54,46 +107,11 @@ func search() {
 		return
 	}
 	//Search key
-	result, err := opensearch.Search(os, "lex-test", "*", "8080")
+	result, err := opensearch.Search(os, "lex-test14", "", "")
 	if err != nil {
-		fmt.Println("No OK")
+		fmt.Println(err)
 		return
 	}
 
-	log.Println(result.Hits.Hits[0].Source)
-}
-
-func create() {
-	a := map[string]interface{}{
-		"host": "10.40.192.213",
-		"http": map[string]interface{}{
-			"method":  "POST",
-			"request": 1669,
-			"version": "HTTP/1.1",
-		},
-		"url": map[string]interface{}{
-			"domain": "10.11.233.11",
-			"path":   "/",
-			"port":   8080,
-		},
-		"timestamp": time.Now(),
-	}
-
-	result, err := opensearch.BulkCreate(osIndex, a)
-	if err != nil {
-		log.Println(err)
-	}
-	fmt.Println("1 result: ", result)
-
-}
-
-func delete() {
-	os, ok := server.GetServerInstance().GetOpensearch()["One"]
-	if !ok {
-		fmt.Println("No OK")
-		return
-	}
-
-	deleteIndex := []string{"lex-test66"}
-	opensearch.SingleDeleteIndex(os, deleteIndex)
+	log.Println(result.Hits)
 }
