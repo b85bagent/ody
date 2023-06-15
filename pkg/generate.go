@@ -2,6 +2,7 @@ package pkg
 
 type Config struct {
 	Opensearch map[string]OpensearchConfig `yaml:"opensearch"`
+	Const      map[string]interface{}
 }
 
 type OpensearchConfig struct {

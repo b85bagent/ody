@@ -6,20 +6,19 @@ scrape_configs:
       module: [icmp]
     static_configs:
     - targets:
-      - https://example.com
+      - https://tw.yahoo.com
     - targets:
-      - 10.11.179.9
-      - 10.11.233.103
+      - https://www.google.com/
       - 10.40.192.145
       - 10.11.179.18
       labels:
-      check: ping
+        check: ping
     - targets:
       - 10.11.5.249
       labels:
-      check: ping
+        check: ping
       tag: hpswitch
     - targets:
       - 10.11.4.1
       labels:
-      check: ping
+        check: ping

@@ -7,3 +7,8 @@ opensearch:
 
 #RabbitMQ
 
+#Const
+
+const:
+  httpRetrySecond: 5
+

@@ -23,6 +23,8 @@ func AutoLoader() {
 		log.Println("NewServer:", err)
 		panic("autoload fail")
 	}
+	
+	serverInstance.Constant = config.Const
 
 	handlerServer := &handler.Server{
 		ServerStruct: serverInstance,
