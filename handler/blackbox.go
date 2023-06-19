@@ -2,6 +2,7 @@ package handler
 
 import (
 	"Agent/exporter"
+	"Agent/model"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -201,6 +202,9 @@ func TimeControl(data map[string]interface{}) {
 
 		go func(config map[interface{}]interface{}) {
 
+			//優先執行一次
+			dataResolve(config)
+
 			// 建立定時器，定期執行工作
 			ticker := time.NewTicker(timeControl)
 			defer ticker.Stop()
@@ -217,6 +221,7 @@ func TimeControl(data map[string]interface{}) {
 
 }
 
+//解析yaml檔後做probe
 func dataResolve(config map[interface{}]interface{}) {
 
 	jobName, ok := config["job_name"].(string)
@@ -279,8 +284,9 @@ func dataResolve(config map[interface{}]interface{}) {
 				startTime := time.Now()
 				// Perform HTTP probe
 				doc := make(map[string]interface{})
+
 				module := paramsValue.([]interface{})[0] //module 初步討論只會有一個，所以寫死為0
-				fmt.Println("module.(string): ", module.(string))
+				// fmt.Println("module.(string): ", module.(string))
 				exporter.CheckModule(module.(string), doc, targetStr)
 
 				fmt.Println(targetStr, " 經過時間: ", time.Since(startTime))
@@ -310,25 +316,25 @@ func dataResolve(config map[interface{}]interface{}) {
 				doc["params"] = paramsValue
 				doc["scrape_interval"] = scrapeInterval
 				doc["metrics_path"] = metricsPath
+				doc["timestamp"] = time.Now()
 
-				r, err := json.Marshal(doc)
-				if err != nil {
-					log.Println(123, err)
-				}
+				/*---如果想看資料，請把下面註解移除---
 
-				fmt.Println("Json doc: ", string(r))
-
-				// -----TODO ----- Opensearch Insert
-
-				// // Write doc to OpenSearch
-				// // TODO: Implement OpenSearch write operation
-				// err = WriteToOpenSearch(doc)
+				// r, err := json.Marshal(doc)
 				// if err != nil {
-				// 	log.Printf("Failed to write result to OpenSearch: %v", err)
-				// 	continue
+				// 	log.Println(123, err)
 				// }
 
-				doc = nil
+				// fmt.Println("Json doc: ", string(r))
+
+				*/
+
+				// Write doc to OpenSearch
+				if errInsertOS := model.DataInsert(doc, "blackbox_snmp"); errInsertOS != nil {
+					log.Printf("Error Bulk Insert, Job_Name: %s, target :%s, reason :%e", jobName, targetStr, errInsertOS)
+				}
+
+				doc = nil //重製map
 
 			}
 

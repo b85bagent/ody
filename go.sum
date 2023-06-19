@@ -7,6 +7,8 @@ github.com/b85bagent/blackbox v0.0.0-20230615074943-3dba49fcf03c h1:6cz0OIXH4qgA
 github.com/b85bagent/blackbox v0.0.0-20230615074943-3dba49fcf03c/go.mod h1:4sSUvMmR1uWzoNo8dk5dUXUYMY866IPKF8fBQvFmsNg=
 github.com/b85bagent/blackbox v0.0.0-20230615081724-c6f96e8e981e h1:/Fc5HTKgi9OX0nnem3EgYc5aPCULVvFINHX/LDkPQvo=
 github.com/b85bagent/blackbox v0.0.0-20230615081724-c6f96e8e981e/go.mod h1:Mi2fsh4RNDb+PABoC5xBdeUgPLN/5h6S7gQ0AveVB+c=
+github.com/b85bagent/opensearch v0.0.0-20230614055304-ed03901defb0 h1:Re+ndWTpVS64mQZfK+4ahNnInsJcTAtTkBPq7sxt6aQ=
+github.com/b85bagent/opensearch v0.0.0-20230614055304-ed03901defb0/go.mod h1:VgtKSxqxSTPXsLU8uWbBXTc6D68fe0qbI3RwS5Qcq5M=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
 github.com/cespare/xxhash/v2 v2.2.0 h1:DC2CZ1Ep5Y4k3ZQ899DldepgrayRUGE6BBZ/cd9Cj44=

@@ -54,6 +54,11 @@ func ProbeHttp(data map[string]interface{}, target string) (resultData map[strin
 
 				name := *mf.Name
 
+				if name == "probe_ssl_last_chain_info" {
+					data[name] = m.Gauge.Value
+					continue
+				}
+
 				for _, v := range mf.Metric[i].Label {
 					name = name + "{" + *v.Name + ":" + *v.Value + "}"
 				}
