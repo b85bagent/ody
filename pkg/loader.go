@@ -23,7 +23,7 @@ func AutoLoader() {
 		log.Println("NewServer:", err)
 		panic("autoload fail")
 	}
-	
+
 	serverInstance.Constant = config.Const
 
 	handlerServer := &handler.Server{
@@ -39,6 +39,8 @@ func AutoLoader() {
 
 		handlerServer.ServerStruct.SetOpensearch(opensearch)
 	}
+
+	handler.BlackboxProcess()
 
 	// server.SetServerInstance(serverInstance)
 
