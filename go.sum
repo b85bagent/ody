@@ -35,6 +35,8 @@ github.com/b85bagent/opensearch v0.0.0-20230620055310-f2e4eecd6eb8 h1:ZSAYfvz+pN
 github.com/b85bagent/opensearch v0.0.0-20230620055310-f2e4eecd6eb8/go.mod h1:VgtKSxqxSTPXsLU8uWbBXTc6D68fe0qbI3RwS5Qcq5M=
 github.com/b85bagent/opensearch v0.0.0-20230620063430-4292324a0e60 h1:Ecgs+cLHRjPUPyBWKg1PxJkPnMlHYNYtryG29px6QSM=
 github.com/b85bagent/opensearch v0.0.0-20230620063430-4292324a0e60/go.mod h1:VgtKSxqxSTPXsLU8uWbBXTc6D68fe0qbI3RwS5Qcq5M=
+github.com/b85bagent/opensearch v0.0.0-20230620134130-acbb565690b1 h1:cHuDTXKlyBU7vl8jSNCxUyIJtarPej87hZZKgWkh/TM=
+github.com/b85bagent/opensearch v0.0.0-20230620134130-acbb565690b1/go.mod h1:VgtKSxqxSTPXsLU8uWbBXTc6D68fe0qbI3RwS5Qcq5M=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
 github.com/cespare/xxhash/v2 v2.2.0 h1:DC2CZ1Ep5Y4k3ZQ899DldepgrayRUGE6BBZ/cd9Cj44=

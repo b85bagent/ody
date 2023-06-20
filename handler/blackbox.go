@@ -172,10 +172,9 @@ func TimeControl(data map[string]interface{}) {
 	if !ok {
 		log.Fatalf("Invalid YAML structure: 'scrape_configs' not found or has incorrect type")
 	}
-	count := 0
+
 	for _, scrapeConfig := range scrapeConfigs {
-		count++
-		log.Println("count: ", count)
+
 		config, ok := scrapeConfig.(map[interface{}]interface{})
 		if !ok {
 			log.Println("Invalid scrape config found, skipping...")
