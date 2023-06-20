@@ -20,7 +20,7 @@ require (
 
 require (
 	github.com/b85bagent/blackbox v0.0.0-20230615074943-3dba49fcf03c // indirect
-	github.com/b85bagent/opensearch v0.0.0-20230620134130-acbb565690b1 // indirect
+	github.com/b85bagent/opensearch v0.0.0-20230620134551-4ff8c5220d1e // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
