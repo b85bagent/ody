@@ -65,9 +65,9 @@ func mapResolve(data map[string]interface{}) {
 			continue
 		}
 
-		// fmt.Println("Job Name:", jobName)
-		// fmt.Println("Scrape Interval:", scrapeInterval)
-		// fmt.Println("Metrics Path:", metricsPath)
+		// log.Println("Job Name:", jobName)
+		// log.Println("Scrape Interval:", scrapeInterval)
+		// log.Println("Metrics Path:", metricsPath)
 
 		params, ok := config["params"].(map[interface{}]interface{})
 		var paramsValue interface{}
@@ -108,10 +108,10 @@ func mapResolve(data map[string]interface{}) {
 					// Perform HTTP probe
 					doc := make(map[string]interface{})
 					module := paramsValue.([]interface{})[0] //module 初步討論只會有一個，所以寫死為0
-					fmt.Println("module.(string): ", module.(string))
+					log.Println("module.(string): ", module.(string))
 					exporter.CheckModule(module.(string), doc, targetStr)
 
-					fmt.Println(targetStr, " 經過時間: ", time.Since(startTime))
+					log.Println(targetStr, " 經過時間: ", time.Since(startTime))
 
 					// Write result to OpenSearch, considering labels and tags
 					doc["target"] = targetStr
@@ -144,7 +144,7 @@ func mapResolve(data map[string]interface{}) {
 						log.Println(123, err)
 					}
 
-					fmt.Println("Json doc: ", string(r))
+					log.Println("Json doc: ", string(r))
 
 					// -----TODO ----- Opensearch Insert
 
@@ -160,7 +160,7 @@ func mapResolve(data map[string]interface{}) {
 
 				}
 
-				fmt.Println("---------------------")
+				log.Println("---------------------")
 			}
 		}
 	}
@@ -242,9 +242,9 @@ func dataResolve(config map[interface{}]interface{}) {
 		return
 	}
 
-	// fmt.Println("Job Name:", jobName)
-	// fmt.Println("Scrape Interval:", scrapeInterval)
-	// fmt.Println("Metrics Path:", metricsPath)
+	// log.Println("Job Name:", jobName)
+	// log.Println("Scrape Interval:", scrapeInterval)
+	// log.Println("Metrics Path:", metricsPath)
 
 	params, ok := config["params"].(map[interface{}]interface{})
 	var paramsValue interface{}
@@ -286,10 +286,10 @@ func dataResolve(config map[interface{}]interface{}) {
 				doc := make(map[string]interface{})
 
 				module := paramsValue.([]interface{})[0] //module 初步討論只會有一個，所以寫死為0
-				// fmt.Println("module.(string): ", module.(string))
+				// log.Println("module.(string): ", module.(string))
 				exporter.CheckModule(module.(string), doc, targetStr)
 
-				fmt.Println(targetStr, " 經過時間: ", time.Since(startTime))
+				log.Println(targetStr, " 經過時間: ", time.Since(startTime))
 
 				// Write result to OpenSearch, considering labels and tags
 				doc["target"] = targetStr
@@ -316,29 +316,27 @@ func dataResolve(config map[interface{}]interface{}) {
 				doc["params"] = paramsValue
 				doc["scrape_interval"] = scrapeInterval
 				doc["metrics_path"] = metricsPath
-				doc["timestamp"] = time.Now()
 
 				/*---如果想看資料，請把下面註解移除---
-
-				// r, err := json.Marshal(doc)
-				// if err != nil {
-				// 	log.Println(123, err)
-				// }
-
-				// fmt.Println("Json doc: ", string(r))
-
+				r, err := json.Marshal(doc)
+				if err != nil {
+					log.Println(123, err)
+				}
+				log.Println("Json doc: ", string(r))
 				*/
 
+				// log.Println("doc: ", doc)
+
 				// Write doc to OpenSearch
-				if errInsertOS := model.DataInsert(doc, "blackbox_snmp"); errInsertOS != nil {
+				if errInsertOS := model.DataInsert(doc); errInsertOS != nil {
 					log.Printf("Error Bulk Insert, Job_Name: %s, target :%s, reason :%e", jobName, targetStr, errInsertOS)
 				}
 
-				doc = nil //重製map
+				doc = nil //reset map
 
 			}
 
-			fmt.Println("---------------------")
+			log.Println("---------------------")
 		}
 	}
 

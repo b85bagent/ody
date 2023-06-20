@@ -1,4 +1,4 @@
-scrape_configs:
+scrape_configs: # module 類型請參考blackbox_exporter/blackbox.yaml
   - job_name: http-prob
     scrape_interval: 30s
     metrics_path: /probe/http
@@ -9,116 +9,115 @@ scrape_configs:
       - https://tw.yahoo.com
       labels:
         check: ping
-    - targets:
-      - https://www.google.com/
-      - 10.40.192.145
-      - 10.11.179.18
-      labels:
-        check: ping
-    - targets:
-      - 10.11.5.249
-      labels:
-        check: ping
-      tag: hpswitch
-    - targets:
-      - 10.11.4.1
-      labels:
-        check: ping
-  - job_name: http-post-prob
-    scrape_interval: 30s
-    metrics_path: /probe/http-post
-    params:
-      module: [http_post_2xx]
-    static_configs:
-    - targets:
-      - https://requestbin.com/ #success
-    - targets:
-      - https://beeceptor.com/
-      - https://requestbin.com/ #success
-      labels:
-        check: post
-    - targets:
-      - https://httpbin.org/
-      labels:
-        check: post
-      tag: postBin
-    - targets:
-      - 10.11.4.1
-      labels:
-        check: ping
-  - job_name: dns-prob
-    scrape_interval: 80s
-    metrics_path: /probe/dns
-    params:
-      module: [dns]
-    static_configs:
-    - targets:
-      - https://developers.google.com/speed/public-dns/
-    - targets:
-      - 8.8.8.8
-      - 8.8.4.4
-      labels:
-        check: dns
-      tag: google public
-    - targets:
-      - 1.1.1.1
-      - https://developers.cloudflare.com/1.1.1.1
-      labels:
-        check: dns
-      tag: Cloudflare 
-    - targets:
-      - 208.67.222.222
-      - 208.67.220.220
-      - https://www.opendns.com/
-      labels:
-        check: OpenDNS
-  - job_name: tcp-prob
-    scrape_interval: 70s
-    metrics_path: /probe/tcp
-    params:
-      module: [tcp_connect]
-    static_configs:
-    - targets:
-      - Speedtest.net
-    - targets:
-      - Portquiz.net
-      - 8.8.8.8
-      labels:
-        check: tcp
-      tag: tcp-test
-  - job_name: icmp-prob
-    scrape_interval: 60s
-    metrics_path: /probe/icmp
-    params:
-      module: [icmp]
-    static_configs:
-    - targets:
-      - 8.8.8.8
-      - 8.8.4.4
-      labels:
-        check: icmp
-      tag: icmp-google
-    - targets:
-      - 1.1.1.1
-      - 1.0.0.1
-      labels:
-        check: icmp
-      tag: icmp-cloudflare
-  - job_name: grpc-prob
-    scrape_interval: 50s
-    metrics_path: /probe/grpc
-    params:
-      module: [grpc]
-    static_configs:
-    - targets:
-      - 8.8.8.8
-      labels:
-        check: grpc
-      tag: grpc
-    - targets:
-      - 1.1.1.1
-      - 1.0.0.1
-      labels:
-        check: grpc
-      tag: grpc
-    
+    # - targets:
+    #   - https://www.google.com/
+    #   - 10.40.192.145
+    #   - 10.11.179.18
+    #   labels:
+    #     check: ping
+    # - targets:
+    #   - 10.11.5.249
+    #   labels:
+    #     check: ping
+    #   tag: hpswitch
+    # - targets:
+    #   - 10.11.4.1
+    #   labels:
+    #     check: ping
+  # - job_name: http-post-prob
+  #   scrape_interval: 30s
+  #   metrics_path: /probe/http-post
+  #   params:
+  #     module: [http_post_2xx]
+  #   static_configs:
+  #   - targets:
+  #     - https://requestbin.com/ #success
+  #   - targets:
+  #     - https://beeceptor.com/
+  #     - https://requestbin.com/ #success
+  #     labels:
+  #       check: post
+  #   - targets:
+  #     - https://httpbin.org/
+  #     labels:
+  #       check: post
+  #     tag: postBin
+  #   - targets:
+  #     - 10.11.4.1
+  #     labels:
+  #       check: ping
+  # - job_name: dns-prob
+  #   scrape_interval: 80s
+  #   metrics_path: /probe/dns
+  #   params:
+  #     module: [dns]
+  #   static_configs:
+  #   - targets:
+  #     - https://developers.google.com/speed/public-dns/
+  #   - targets:
+  #     - 8.8.8.8
+  #     - 8.8.4.4
+  #     labels:
+  #       check: dns
+  #     tag: google public
+  #   - targets:
+  #     - 1.1.1.1
+  #     - https://developers.cloudflare.com/1.1.1.1
+  #     labels:
+  #       check: dns
+  #     tag: Cloudflare 
+  #   - targets:
+  #     - 208.67.222.222
+  #     - 208.67.220.220
+  #     - https://www.opendns.com/
+  #     labels:
+  #       check: OpenDNS
+  # - job_name: tcp-prob
+  #   scrape_interval: 70s
+  #   metrics_path: /probe/tcp
+  #   params:
+  #     module: [tcp_connect]
+  #   static_configs:
+  #   - targets:
+  #     - Speedtest.net
+  #   - targets:
+  #     - Portquiz.net
+  #     - 8.8.8.8
+  #     labels:
+  #       check: tcp
+  #     tag: tcp-test
+  # - job_name: icmp-prob
+  #   scrape_interval: 60s
+  #   metrics_path: /probe/icmp
+  #   params:
+  #     module: [icmp]
+  #   static_configs:
+  #   - targets:
+  #     - 8.8.8.8
+  #     - 8.8.4.4
+  #     labels:
+  #       check: icmp
+  #     tag: icmp-google
+  #   - targets:
+  #     - 1.1.1.1
+  #     - 1.0.0.1
+  #     labels:
+  #       check: icmp
+  #     tag: icmp-cloudflare
+  # - job_name: grpc-prob
+  #   scrape_interval: 50s
+  #   metrics_path: /probe/grpc
+  #   params:
+  #     module: [grpc]
+  #   static_configs:
+  #   - targets:
+  #     - 8.8.8.8
+  #     labels:
+  #       check: grpc
+  #     tag: grpc
+  #   - targets:
+  #     - 1.1.1.1
+  #     - 1.0.0.1
+  #     labels:
+  #       check: grpc
+  #     tag: grpc

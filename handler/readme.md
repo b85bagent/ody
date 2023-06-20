@@ -10,7 +10,7 @@ content, err := ReadYAMLFromFile("snmp.yaml")
  // Push Message to Queue
  rabbitmq.PublishSimple(content)
 
- fmt.Println("send success")
+ log.Println("send success")
 
  // catch the message from Queue
  //rabbitmq.ConsumeSimple()

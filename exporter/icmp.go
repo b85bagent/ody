@@ -2,7 +2,6 @@ package exporter
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -16,7 +15,7 @@ import (
 
 func ProbeIcmp(data map[string]interface{}, target string) (resultData map[string]interface{}) {
 
-	fmt.Println("Probing ICMP Start: ", target)
+	log.Println("Probing ICMP Start: ", target)
 
 	registry := prometheus.NewPedanticRegistry()
 
@@ -41,30 +40,36 @@ func ProbeIcmp(data map[string]interface{}, target string) (resultData map[strin
 		log.Printf("Could not gather metrics: %v", err)
 	}
 
-	fmt.Println("metrics: ", metrics)
+	log.Println("metrics: ", metrics)
 
 	// 處理收集到的數據資料，寫入map內
 	for _, mf := range metrics {
-		// fmt.Printf("Metric: %s, %.1f\n", *mf.Name, *mf.Metric[0].Gauge.Value)
+		r := make(map[string]interface{})
+		nested := make(map[string]interface{})
 		for i, m := range mf.Metric {
 			if len(mf.Metric[i].Label) != 0 {
-
 				name := *mf.Name
-
-				for _, v := range mf.Metric[i].Label {
-					name = name + "{" + *v.Name + ":" + *v.Value + "}"
+				if name == "probe_ssl_last_chain_info" {
+					data[*mf.Name] = m.Gauge.Value
+					continue
 				}
 
-				data[name] = m.Gauge.Value
-				// fmt.Printf("Metric: %s, Metric: %v, Value: %v\n", *mf.Name, mf.Metric[i].Label, m.Gauge)
-				continue
+				for _, v := range mf.Metric[i].Label {
+					// labelName := *v.Name
+					labelValue := *v.Value
+
+					nested[labelValue] = m.Gauge.Value
+					// r[labelName+"_"+fmt.Sprint(i)] = nested
+
+				}
+
+				r[*mf.Metric[i].Label[0].Name] = nested
+
+				data[name] = r
+			} else {
+				data[*mf.Name] = m.Gauge.Value
 			}
-
-			data[*mf.Name] = m.Gauge.Value
-			// fmt.Printf("Metric: %s,Value: %v\n", *mf.Name, m.Gauge)
-
 		}
-
 	}
 
 	if result {

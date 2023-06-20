@@ -2,7 +2,7 @@ package exporter
 
 import (
 	"Agent/server"
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -23,6 +23,7 @@ func (h *HostMonitor) Collect(ch chan<- prometheus.Metric) {}
 
 // 確認module類型，給予不同的Probe
 func CheckModule(module string, data map[string]interface{}, target string) (resultData map[string]interface{}, err error) {
+
 	switch module {
 	case "http_2xx":
 		resultData = ProbeHttp(data, target)
@@ -30,11 +31,11 @@ func CheckModule(module string, data map[string]interface{}, target string) (res
 		resultData = ProbeHttpPOST(data, target)
 	case "dns":
 		resultData = ProbeDns(data, target)
-	case "tcp_connect":
+	case "irc_banner", "ssh_banner", "pop3s_banner", "tcp_connect":
 		resultData = ProbeTcp(data, target)
-	case "icmp":
+	case "icmp", "icmp_ttl5":
 		resultData = ProbeIcmp(data, target)
-	case "grpc":
+	case "grpc_plain", "grpc":
 		resultData = ProbeGrpc(data, target)
 	}
 
@@ -45,7 +46,7 @@ func CheckModule(module string, data map[string]interface{}, target string) (res
 func timeOutSetting() time.Duration {
 	timeoutSetting, ok := server.GetServerInstance().GetConst()["httpRetrySecond"]
 	if !ok {
-		fmt.Println("timeoutSetting Get failed")
+		log.Println("timeoutSetting Get failed")
 		return 0
 	}
 

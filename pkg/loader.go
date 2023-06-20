@@ -4,7 +4,6 @@ import (
 	"Agent/handler"
 	"Agent/server"
 	"crypto/tls"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -62,10 +61,10 @@ func initOpensearch(setting map[string]OpensearchConfig) (map[string]*opensearch
 		})
 
 		if err != nil {
-			fmt.Println("無法建立 OpenSearch 客戶端:", err)
+			log.Println("無法建立 OpenSearch 客戶端:", err)
 			return nil, err
 		}
-		// fmt.Println(client.Info())
+		// log.Println(client.Info())
 		opensearchClient[key] = client
 	}
 

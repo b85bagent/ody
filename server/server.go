@@ -48,6 +48,10 @@ func (s *Server) GetOpensearch() map[string]*opensearch.Client {
 	return s.opensearchClient
 }
 
+func (s *Server) GetOpensearchIndex() string {
+	return s.GetOpensearchIndex()
+}
+
 func (s *Server) SetConst(Const map[string]interface{}) {
 	s.Constant = Const
 }

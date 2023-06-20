@@ -2,35 +2,51 @@ package model
 
 import (
 	"Agent/server"
-	"fmt"
 	"log"
 
 	os "github.com/b85bagent/opensearch"
 	"github.com/opensearch-project/opensearch-go"
 )
 
-func DataInsert(data map[string]interface{}, osIndex string) error {
+type opensearchConfig struct {
+	client *opensearch.Client
+	index  string
+}
+
+func DataInsert(data map[string]interface{}) error {
 	client := DBinit()
+
 	var Setting os.BulkPreviousUse
 	Setting.Create.Data = data
-	Setting.Create.Index = osIndex
-	result, err := os.BulkPrevious(client, "create", Setting)
+	Setting.Create.Index = client.index
+
+	result, err := os.BulkPrevious(client.client, "create", Setting)
 	if err != nil {
 		log.Println("Bulk Insert error: ", err)
 		return err
 	}
+
 	log.Println(result)
 
 	return nil
 }
 
-func DBinit() *opensearch.Client {
+func DBinit() (r opensearchConfig) {
 
 	client, ok := server.GetServerInstance().GetOpensearch()["One"]
 	if !ok {
-		fmt.Println("Opensearch Client Get failed")
-		return nil
+		log.Println("Opensearch Client Get failed")
+		return r
 	}
 
-	return client
+	index, ok := server.GetServerInstance().GetConst()["index"]
+	if !ok {
+		log.Println("timeoutSetting Get failed")
+		return r
+	}
+
+	r.client = client
+	r.index = index.(string)
+
+	return r
 }

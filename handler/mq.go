@@ -72,7 +72,7 @@ func (r *RabbitMQ) PublishSimple(message string) {
 		nil,         //額外的屬性
 	)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 	//調用channel發送消息到隊列中
 	r.channel.Publish(
@@ -98,7 +98,7 @@ func (r *RabbitMQ) ConsumeSimple() {
 		nil,         //額外的屬性
 	)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 
 	//接收消息
@@ -112,7 +112,7 @@ func (r *RabbitMQ) ConsumeSimple() {
 		nil,    // 額外的屬性
 	)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 
 	forever := make(chan bool)
