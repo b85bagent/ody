@@ -73,11 +73,11 @@ func ProbeTcp(data map[string]interface{}, target string) (resultData map[string
 	}
 
 	if result {
-		data["result"] = "TCP_Probe success"
+		data["result"] = "Success"
 		return data
 	}
 
-	data["result"] = "TCP_Probe failed"
+	data["result"] = "Failed"
 
 	return data
 }

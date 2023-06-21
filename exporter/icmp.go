@@ -73,11 +73,11 @@ func ProbeIcmp(data map[string]interface{}, target string) (resultData map[strin
 	}
 
 	if result {
-		data["result"] = "ICMP_Probe success"
+		data["result"] = "Success"
 		return data
 	}
 
-	data["result"] = "ICMP_Probe failed"
+	data["result"] = "Failed"
 
 	return data
 }

@@ -72,11 +72,11 @@ func ProbeDns(data map[string]interface{}, target string) (resultData map[string
 	}
 
 	if result {
-		data["result"] = "DNS_Probe success"
+		data["result"] = "Success"
 		return data
 	}
 
-	data["result"] = "DNS_Probe failed"
+	data["result"] = "Failed"
 
 	return data
 }

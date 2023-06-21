@@ -71,11 +71,11 @@ func ProbeGrpc(data map[string]interface{}, target string) (resultData map[strin
 	}
 
 	if result {
-		data["result"] = "GRPC_Probe success"
+		data["result"] = "Success"
 		return data
 	}
 
-	data["result"] = "GRPC_Probe failed"
+	data["result"] = "Failed"
 
 	return data
 }

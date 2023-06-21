@@ -74,11 +74,11 @@ func ProbeHttp(data map[string]interface{}, target string) (resultData map[strin
 	}
 
 	if result {
-		data["result"] = "HTTP_Probe success"
+		data["result"] = "Success"
 		return data
 	}
 
-	data["result"] = "HTTP_Probe failed"
+	data["result"] = "Failed"
 
 	return data
 }
@@ -147,11 +147,11 @@ func ProbeHttpPOST(data map[string]interface{}, target string) (resultData map[s
 	}
 
 	if result {
-		data["result"] = "HTTP_POST_Probe success"
+		data["result"] = "Success"
 		return data
 	}
 
-	data["result"] = "HTTP_POST_Probe failed"
+	data["result"] = "Failed"
 
 	return data
 }
