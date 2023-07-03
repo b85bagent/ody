@@ -11,6 +11,7 @@ import (
 	logger "github.com/go-kit/log"
 
 	"github.com/prometheus/client_golang/prometheus"
+	pconfig "github.com/prometheus/common/config"
 )
 
 func ProbeHttp(data map[string]interface{}, target string) (resultData map[string]interface{}) {
@@ -19,8 +20,16 @@ func ProbeHttp(data map[string]interface{}, target string) (resultData map[strin
 
 	registry := prometheus.NewPedanticRegistry()
 
+	DefaultHTTPClientConfig := pconfig.HTTPClientConfig{
+		TLSConfig: pconfig.TLSConfig{
+			// InsecureSkipVerify: true,
+			CertFile: "/Users/ss19960429ss/go/src/private.key",
+		},
+	}
+
 	t := bec.HTTPProbe{
 		IPProtocolFallback: true,
+		HTTPClientConfig:   DefaultHTTPClientConfig,
 		// IPProtocolFallback: true,
 		// Compression:        "gzip",
 		// Headers: map[string]string{

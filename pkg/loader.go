@@ -10,8 +10,8 @@ import (
 	"github.com/opensearch-project/opensearch-go"
 )
 
-func AutoLoader() {
-	config, err := configInit()
+func AutoLoader(configFile,snmpFile string) {
+	config, err := configInit(configFile)
 
 	if err != nil {
 		log.Println(err)
@@ -39,7 +39,7 @@ func AutoLoader() {
 		handlerServer.ServerStruct.SetOpensearch(opensearch)
 	}
 
-	handler.BlackboxProcess()
+	handler.BlackboxProcess(snmpFile)
 
 	// server.SetServerInstance(serverInstance)
 

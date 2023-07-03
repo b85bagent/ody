@@ -19,6 +19,11 @@ require (
 )
 
 require (
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
+)
+
+require (
 	github.com/b85bagent/blackbox v0.0.0-20230615074943-3dba49fcf03c // indirect
 	github.com/b85bagent/opensearch v0.0.0-20230620134551-4ff8c5220d1e // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -30,6 +35,7 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f // indirect
 	github.com/prometheus/procfs v0.10.1 // indirect
+	github.com/spf13/cobra v1.7.0
 	golang.org/x/mod v0.8.0 // indirect
 	golang.org/x/oauth2 v0.8.0 // indirect
 	golang.org/x/sys v0.9.0 // indirect

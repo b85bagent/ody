@@ -15,6 +15,7 @@ type opensearchConfig struct {
 
 func DataInsert(data map[string]interface{}) error {
 	client := DBinit()
+	log.Println(client)
 
 	var Setting os.BulkPreviousUse
 	Setting.Create.Data = data

@@ -12,14 +12,16 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func BlackboxProcess() {
-	data := yamlToMap()
+func BlackboxProcess(snmpFile string) {
+
+	data := yamlToMap(snmpFile)
+
 	TimeControl(data)
 }
 
 //讀取Yaml檔轉成map
-func yamlToMap() (data map[string]interface{}) {
-	yamlFile, err := ioutil.ReadFile("snmp.yaml")
+func yamlToMap(snmpFile string) (data map[string]interface{}) {
+	yamlFile, err := ioutil.ReadFile(snmpFile)
 	if err != nil {
 		log.Fatalf("Failed to read YAML file: %v", err)
 	}

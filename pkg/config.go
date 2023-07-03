@@ -7,8 +7,9 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func configInit() (*Config, error) {
-	data, err := ioutil.ReadFile("config.yaml")
+func configInit(configFile string) (*Config, error) {
+
+	data, err := ioutil.ReadFile(configFile)
 	if err != nil {
 		log.Fatalf("failed to read config file: %v", err)
 		return nil, err
@@ -22,6 +23,8 @@ func configInit() (*Config, error) {
 		log.Fatalf("failed to unmarshal config file: %v", err)
 		return nil, err
 	}
+
+	log.Println("config file:", &config)
 
 	return &config, nil
 

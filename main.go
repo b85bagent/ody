@@ -1,11 +1,11 @@
 package main
 
 import (
-	"Agent/pkg"
+	"Agent/cmd"
 )
 
 func main() {
-	// 載入Server資料
-	pkg.AutoLoader()
+
+	cmd.Run()
 
 }
