@@ -1,17 +1,28 @@
 package pkg
 
 import (
+	"errors"
 	"io/ioutil"
-	"log"
+	"regexp"
 
 	"gopkg.in/yaml.v2"
 )
 
 func configInit(configFile string) (*Config, error) {
 
+	match, err := regexp.MatchString("^config.*\\.*", configFile)
+	if err != nil {
+		e := errors.New("config regexp error : " + err.Error())
+		return nil, e
+	}
+
+	if !match {
+		e := errors.New("config 檔案名稱不符合要求，請用-h 確認指令以及符合的yaml格式")
+		return nil, e
+	}
+
 	data, err := ioutil.ReadFile(configFile)
 	if err != nil {
-		log.Fatalf("failed to read config file: %v", err)
 		return nil, err
 	}
 
@@ -20,11 +31,8 @@ func configInit(configFile string) (*Config, error) {
 
 	// 解析配置文件
 	if err = yaml.Unmarshal(data, &config); err != nil {
-		log.Fatalf("failed to unmarshal config file: %v", err)
 		return nil, err
 	}
-
-	log.Println("config file:", &config)
 
 	return &config, nil
 

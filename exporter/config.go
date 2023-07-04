@@ -5,7 +5,19 @@ import (
 	"log"
 	"time"
 
+	bep "Agent/blackbox_exporter/prober"
+
 	"github.com/prometheus/client_golang/prometheus"
+)
+
+var (
+	Probers = map[string]bep.ProbeFn{
+		"http": bep.ProbeHTTP,
+		"tcp":  bep.ProbeTCP,
+		"icmp": bep.ProbeICMP,
+		"dns":  bep.ProbeDNS,
+		"grpc": bep.ProbeGRPC,
+	}
 )
 
 type HostMonitor struct{}
@@ -21,29 +33,8 @@ func (h *HostMonitor) Describe(ch chan<- *prometheus.Desc) {}
 //實現collect接口，執行抓取函數返回數據
 func (h *HostMonitor) Collect(ch chan<- prometheus.Metric) {}
 
-// 確認module類型，給予不同的Probe
-func CheckModule(module string, data map[string]interface{}, target string) (resultData map[string]interface{}, err error) {
-
-	switch module {
-	case "http_2xx":
-		resultData = ProbeHttp(data, target)
-	case "http_post_2xx":
-		resultData = ProbeHttpPOST(data, target)
-	case "dns":
-		resultData = ProbeDns(data, target)
-	case "irc_banner", "ssh_banner", "pop3s_banner", "tcp_connect":
-		resultData = ProbeTcp(data, target)
-	case "icmp", "icmp_ttl5":
-		resultData = ProbeIcmp(data, target)
-	case "grpc_plain", "grpc":
-		resultData = ProbeGrpc(data, target)
-	}
-
-	return resultData, nil
-}
-
-//設定監控每次probe的timeout時間
 func timeOutSetting() time.Duration {
+
 	timeoutSetting, ok := server.GetServerInstance().GetConst()["httpRetrySecond"]
 	if !ok {
 		log.Println("timeoutSetting Get failed")

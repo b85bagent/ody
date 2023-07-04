@@ -1,7 +1,7 @@
 modules:
   http_2xx:
     prober: http
-    timeout: 3s
+    timeout: 30s
     http:
       preferred_ip_protocol: "ip4"
   http_post_2xx:
@@ -51,3 +51,10 @@ modules:
     timeout: 5s
     icmp:
       ttl: 5
+  dns_test:
+    prober: dns
+    timeout: 5s
+    dns:
+      query_name: www.google.com
+      query_class: CH
+      query_type: A

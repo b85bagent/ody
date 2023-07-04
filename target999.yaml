@@ -1,0 +1,12 @@
+scrape_configs: # module 類型請參考blackbox_exporter/blackbox.yaml
+  - job_name: tcp-prob
+    scrape_interval: 70s
+    metrics_path: /probe/tcp
+    params:
+      module: [tcp_connect]
+    static_configs:
+    - targets:
+      - 8.8.8.8:53
+      labels:
+        check: tcp
+      tag: tcp-test

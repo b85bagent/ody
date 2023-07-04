@@ -1,6 +1,6 @@
 
 {
-content, err := ReadYAMLFromFile("snmp.yaml")
+content, err := ReadYAMLFromFile("target.yaml")
  if err != nil {
   log.Println("Read Yaml error: ", err)
  }
