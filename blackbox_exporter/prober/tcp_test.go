@@ -33,7 +33,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	pconfig "github.com/prometheus/common/config"
 
-	"Agent/blackbox_exporter/config"
+	"agent/blackbox_exporter/config"
 )
 
 func TestTCPConnection(t *testing.T) {

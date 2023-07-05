@@ -41,7 +41,7 @@ import (
 	"github.com/prometheus/common/version"
 	"golang.org/x/net/publicsuffix"
 
-	"Agent/blackbox_exporter/config"
+	"agent/blackbox_exporter/config"
 )
 
 func matchRegularExpressions(reader io.Reader, httpConfig config.HTTPProbe, logger log.Logger) bool {
@@ -233,7 +233,7 @@ func (bc *byteCounter) Read(p []byte) (int, error) {
 	return n, err
 }
 
-var userAgentDefaultHeader = fmt.Sprintf("Blackbox Exporter/%s", version.Version)
+var useragentDefaultHeader = fmt.Sprintf("Blackbox Exporter/%s", version.Version)
 
 func ProbeHTTP(ctx context.Context, target string, module config.Module, registry *prometheus.Registry, logger log.Logger) (success bool) {
 	var redirects int
@@ -437,9 +437,9 @@ func ProbeHTTP(ctx context.Context, target string, module config.Module, registr
 		request.Header.Set(key, value)
 	}
 
-	_, hasUserAgent := request.Header["User-Agent"]
-	if !hasUserAgent {
-		request.Header.Set("User-Agent", userAgentDefaultHeader)
+	_, hasUseragent := request.Header["User-agent"]
+	if !hasUseragent {
+		request.Header.Set("User-agent", useragentDefaultHeader)
 	}
 
 	trace := &httptrace.ClientTrace{

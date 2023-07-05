@@ -1,7 +1,7 @@
 package main
 
 import (
-	"Agent/cmd"
+	"agent/cmd"
 )
 
 func main() {

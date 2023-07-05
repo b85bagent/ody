@@ -14,7 +14,7 @@
 package prober
 
 import (
-	"Agent/blackbox_exporter/config"
+	"agent/blackbox_exporter/config"
 	"context"
 
 	"github.com/go-kit/log"

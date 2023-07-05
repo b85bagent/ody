@@ -30,7 +30,7 @@ import (
 	"golang.org/x/net/ipv4"
 	"golang.org/x/net/ipv6"
 
-	"Agent/blackbox_exporter/config"
+	"agent/blackbox_exporter/config"
 )
 
 var (

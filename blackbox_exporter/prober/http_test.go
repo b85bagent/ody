@@ -39,7 +39,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	pconfig "github.com/prometheus/common/config"
 
-	"Agent/blackbox_exporter/config"
+	"agent/blackbox_exporter/config"
 )
 
 func TestHTTPStatusCodes(t *testing.T) {
@@ -1156,7 +1156,7 @@ func TestFailIfHeaderNotMatchesRegexp(t *testing.T) {
 func TestHTTPHeaders(t *testing.T) {
 	headers := map[string]string{
 		"Host":            "my-secret-vhost.com",
-		"User-Agent":      "unsuspicious user",
+		"User-agent":      "unsuspicious user",
 		"Accept-Language": "en-US",
 	}
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

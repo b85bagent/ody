@@ -1,11 +1,11 @@
 package exporter
 
 import (
-	"Agent/server"
+	"agent/server"
 	"log"
 	"time"
 
-	bep "Agent/blackbox_exporter/prober"
+	bep "agent/blackbox_exporter/prober"
 
 	"github.com/prometheus/client_golang/prometheus"
 )

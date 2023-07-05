@@ -11,5 +11,6 @@ opensearch:
 
 const:
   httpRetrySecond: 5
-  index: "blackbox_snmp" #opensearch index
+  index: "lex-test12" #opensearch index
+  debug: false
 

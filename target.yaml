@@ -124,4 +124,3 @@ scrape_configs: # module 類型請參考blackbox_exporter/blackbox.yaml
       labels:
         check: grpc
       tag: grpc
-  

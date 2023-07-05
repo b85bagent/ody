@@ -1,7 +1,8 @@
 package model
 
 import (
-	"Agent/server"
+	"agent/pkg/tool"
+	"agent/server"
 	"log"
 
 	os "github.com/b85bagent/opensearch"
@@ -13,7 +14,12 @@ type opensearchConfig struct {
 	index  string
 }
 
+var (
+	l *tool.Logger
+)
+
 func DataInsert(data map[string]interface{}) error {
+	l = server.GetServerInstance().GetLogger()
 	client := DBinit()
 
 	var Setting os.BulkPreviousUse
@@ -26,7 +32,7 @@ func DataInsert(data map[string]interface{}) error {
 		return err
 	}
 
-	log.Println(result)
+	l.Println(result)
 
 	return nil
 }

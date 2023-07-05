@@ -1,23 +1,29 @@
 package exporter
 
 import (
-	bec "Agent/blackbox_exporter/config"
-	bep "Agent/blackbox_exporter/prober"
+	bec "agent/blackbox_exporter/config"
+	bep "agent/blackbox_exporter/prober"
+	"agent/pkg/tool"
+	"agent/server"
 	"context"
 	"errors"
 	"log"
 
 	logger "github.com/go-kit/log"
-	"github.com/go-kit/log/level"
 	"github.com/prometheus/client_golang/prometheus"
+)
+
+var (
+	l *tool.Logger
 )
 
 // 確認module類型，給予不同的Probe
 func CheckModuleAndDoProbe(module string, data map[string]interface{}, target string, sc *bec.SafeConfig) (resultData map[string]interface{}, err error) {
+	l = server.GetServerInstance().GetLogger()
 
 	result, err := comparisonConfigAndDoProbe(data, module, target, sc)
 	if err != nil {
-		log.Println("ReLoadConfig error: ", err)
+		l.Println("ReLoadConfig error: ", err)
 		return nil, err
 	}
 
@@ -28,15 +34,12 @@ func CheckModuleAndDoProbe(module string, data map[string]interface{}, target st
 func comparisonConfigAndDoProbe(data map[string]interface{}, m, target string, sc *bec.SafeConfig) (resultData map[string]interface{}, err error) {
 
 	var e error
-	logger := logger.NewNopLogger()
-
-	level.Info(logger).Log("msg", "Reloaded config file")
 
 	//comparisonConfig
 	module, ok := sc.C.Modules[m]
 
 	if !ok {
-		level.Error(logger).Log("msg", "Module "+m+" not found")
+
 		e = errors.New("Module " + m + " not found")
 
 		return nil, e
@@ -45,7 +48,7 @@ func comparisonConfigAndDoProbe(data map[string]interface{}, m, target string, s
 	prober, ok := Probers[module.Prober]
 
 	if !ok {
-		level.Error(logger).Log("msg", "Prober: "+module.Prober+"not found")
+
 		e = errors.New("Prober: " + module.Prober + "not found")
 
 		return nil, e
@@ -54,7 +57,7 @@ func comparisonConfigAndDoProbe(data map[string]interface{}, m, target string, s
 	//doProbe
 	result, errProbe := doProbe(data, module, prober, target)
 	if errProbe != nil {
-		level.Error(logger).Log("msg", "Probe failed", "err", errProbe)
+
 		log.Println("Probe failed: ", errProbe)
 		return nil, err
 	}

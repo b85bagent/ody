@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"Agent/server"
+	"agent/server"
 )
 
 type Server struct {

@@ -56,5 +56,5 @@ modules:
     timeout: 5s
     dns:
       query_name: www.google.com
-      query_class: CH
+      query_class: IN
       query_type: A

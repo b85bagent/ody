@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"Agent/pkg"
+	"agent/pkg/autoload"
 	"log"
 	"os"
 
@@ -12,12 +12,12 @@ func Run() {
 	var targetFile, configFile, blackboxFile string
 
 	rootCmd := &cobra.Command{
-		Use:   "Agent",
-		Short: "Agent Application",
-		Long:  "Agent using Cli for setting yaml configuration",
+		Use:   "agent",
+		Short: "agent Application",
+		Long:  "agent using Cli for setting yaml configuration",
 		Run: func(cmd *cobra.Command, args []string) {
 			// 在這裡添加你的應用程式邏輯
-			pkg.AutoLoader(configFile, targetFile, blackboxFile)
+			// pkg.AutoLoader(configFile, targetFile, blackboxFile)
 		},
 	}
 
@@ -29,6 +29,7 @@ func Run() {
 	// 在執行根命令之前的預處理邏輯
 	rootCmd.PreRun = func(cmd *cobra.Command, args []string) {
 		log.Printf("使用的 Config 檔案: %s / 使用的 Target 檔案: %s / 使用的 Blackbox 檔案: %s\n", configFile, targetFile, blackboxFile)
+		autoload.AutoLoader(configFile, targetFile, blackboxFile)
 	}
 
 	// 執行根命令

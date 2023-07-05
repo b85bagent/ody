@@ -1,6 +1,7 @@
 package server
 
 import (
+	"agent/pkg/tool"
 	"log"
 	"sync"
 
@@ -20,6 +21,7 @@ type Server struct {
 	// httpClient    map[string]httpClient.Methods
 	// gracefulCtx   *context.Context
 	opensearchClient map[string]*opensearch.Client
+	logger           *tool.Logger
 }
 
 func NewServer() (newServerObject *Server, err error) {
@@ -58,4 +60,12 @@ func (s *Server) SetConst(Const map[string]interface{}) {
 
 func (s *Server) GetConst() (Const map[string]interface{}) {
 	return s.Constant
+}
+
+func (s *Server) SetLogger(logger *tool.Logger) {
+	s.logger = logger
+}
+
+func (s *Server) GetLogger() *tool.Logger {
+	return s.logger
 }
