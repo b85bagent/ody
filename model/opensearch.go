@@ -4,6 +4,7 @@ import (
 	"agent/pkg/tool"
 	"agent/server"
 	"log"
+	"sync"
 
 	os "github.com/b85bagent/opensearch"
 	"github.com/opensearch-project/opensearch-go"
@@ -15,10 +16,14 @@ type opensearchConfig struct {
 }
 
 var (
-	l *tool.Logger
+	l               *tool.Logger
+	dataInsertMutex sync.Mutex
 )
 
 func DataInsert(data map[string]interface{}) error {
+	dataInsertMutex.Lock()
+	defer dataInsertMutex.Unlock()
+
 	l = server.GetServerInstance().GetLogger()
 	client := DBinit()
 

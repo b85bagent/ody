@@ -201,7 +201,7 @@ func dataResolve(config map[interface{}]interface{}, sc *bec.SafeConfig) {
 
 				module := paramsValue.([]interface{})[0] //module 初步討論只會有一個，所以寫死為0
 
-				_, errCMADP := exporter.CheckModuleAndDoProbe(module.(string), doc, targetStr, sc)
+				doc, errCMADP := exporter.CheckModuleAndDoProbe(module.(string), doc, targetStr, sc)
 				if errCMADP != nil {
 					l.Printf("第 %d 個CheckModuleAndDoProbe failed: %e", i, errCMADP)
 					continue

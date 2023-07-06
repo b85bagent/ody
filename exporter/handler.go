@@ -3,8 +3,6 @@ package exporter
 import (
 	bec "agent/blackbox_exporter/config"
 	bep "agent/blackbox_exporter/prober"
-	"agent/pkg/tool"
-	"agent/server"
 	"context"
 	"errors"
 	"log"
@@ -13,17 +11,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-var (
-	l *tool.Logger
-)
-
 // 確認module類型，給予不同的Probe
 func CheckModuleAndDoProbe(module string, data map[string]interface{}, target string, sc *bec.SafeConfig) (resultData map[string]interface{}, err error) {
-	l = server.GetServerInstance().GetLogger()
 
 	result, err := comparisonConfigAndDoProbe(data, module, target, sc)
 	if err != nil {
-		l.Println("ReLoadConfig error: ", err)
+		log.Println("comparisonConfig error: ", err)
 		return nil, err
 	}
 
