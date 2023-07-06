@@ -5,6 +5,7 @@ import (
 	"agent/model"
 	"agent/pkg/tool"
 	"agent/server"
+	"context"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -27,7 +28,7 @@ var (
 )
 
 //blackbox 進程
-func BlackboxProcess(targetFile, blackboxFile string) {
+func BlackboxProcess(ctx context.Context, targetFile, blackboxFile string) {
 
 	//讀取blackbox.yaml
 	sc, err := blackboxConfig(blackboxFile)
@@ -44,7 +45,7 @@ func BlackboxProcess(targetFile, blackboxFile string) {
 	}
 
 	//定時器設定
-	TimeControl(targetConfig, sc)
+	TimeControl(ctx, targetConfig, sc)
 }
 
 //讀取Target Yaml檔轉成map
@@ -74,7 +75,7 @@ func targetConfig(targetFile string) (data map[string]interface{}, err error) {
 }
 
 //建立定時器
-func TimeControl(data map[string]interface{}, sc *bec.SafeConfig) {
+func TimeControl(ctx context.Context, data map[string]interface{}, sc *bec.SafeConfig) {
 
 	l = server.GetServerInstance().GetLogger()
 
@@ -119,17 +120,19 @@ func TimeControl(data map[string]interface{}, sc *bec.SafeConfig) {
 			ticker := time.NewTicker(timeControl)
 			defer ticker.Stop()
 
-			for range ticker.C {
-				//定時任務觸發
-				dataResolve(config, sc)
+			for {
+				select {
+				default:
+				case <-ticker.C:
+					dataResolve(config, sc)
+				case <-ctx.Done():
 
+					return
+				}
 			}
+
 		}(config, sc)
 	}
-
-	// 防止主程式退出
-	select {}
-
 }
 
 //解析yaml檔後做probe

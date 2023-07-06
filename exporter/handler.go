@@ -29,7 +29,9 @@ func comparisonConfigAndDoProbe(data map[string]interface{}, m, target string, s
 	var e error
 
 	//comparisonConfig
+	sc.Lock()
 	module, ok := sc.C.Modules[m]
+	sc.Unlock()
 
 	if !ok {
 

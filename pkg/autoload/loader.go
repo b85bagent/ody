@@ -4,9 +4,11 @@ import (
 	"agent/handler"
 	"agent/pkg/tool"
 	"agent/server"
+	"context"
 	"crypto/tls"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/opensearch-project/opensearch-go"
 )
@@ -50,8 +52,43 @@ func AutoLoader(configFile, targetFile, blackboxFile string) {
 	}
 
 	logger.Println("AutoLoader Success")
+	reload := make(chan bool, 1)
+	newReload := make(chan bool)
 
-	handler.BlackboxProcess(targetFile, blackboxFile)
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go handler.BlackboxProcess(ctx, targetFile, blackboxFile)
+	var reloadMutex sync.Mutex
+	go func() {
+		for {
+			select {
+			case <-reload:
+				reloadMutex.Lock()
+				cancel()
+				log.Println("启动新的handler.BlackboxProcess")
+				ctx2, cancel := context.WithCancel(context.Background())
+				handler.BlackboxProcess(ctx2, "target999.yaml", blackboxFile)
+
+				defer cancel()
+				reloadMutex.Unlock()
+			}
+			reloadMutex.Lock()
+			reload = newReload
+			reloadMutex.Unlock()
+		}
+	}()
+
+	http.HandleFunc("/reload", func(w http.ResponseWriter, r *http.Request) {
+		reloadMutex.Lock()
+		// 当接收到GET请求时，发送一个信号到reload管道
+		log.Println("当接收到GET请求时，发送一个信号到reload管道")
+
+		reload <- true
+		w.Write([]byte("Reload signal sent!"))
+		reloadMutex.Unlock()
+	})
+
+	http.ListenAndServe(":8080", nil)
 
 	// server.SetServerInstance(serverInstance)
 

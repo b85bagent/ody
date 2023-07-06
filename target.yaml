@@ -1,6 +1,6 @@
 scrape_configs: # module 類型請參考blackbox_exporter/blackbox.yaml
   - job_name: http-prob
-    scrape_interval: 30s
+    scrape_interval: 10s
     metrics_path: /probe/http
     params:
       module: [http_2xx]
@@ -26,7 +26,7 @@ scrape_configs: # module 類型請參考blackbox_exporter/blackbox.yaml
       labels:
         check: ping
   - job_name: http-post-prob
-    scrape_interval: 30s
+    scrape_interval: 10s
     metrics_path: /probe/http-post
     params:
       module: [http_post_2xx]
@@ -48,7 +48,7 @@ scrape_configs: # module 類型請參考blackbox_exporter/blackbox.yaml
       labels:
         check: ping
   - job_name: dns-prob
-    scrape_interval: 80s
+    scrape_interval: 10s
     metrics_path: /probe/dns
     params:
       module: [dns_test]
@@ -76,7 +76,7 @@ scrape_configs: # module 類型請參考blackbox_exporter/blackbox.yaml
       labels:
         check: OpenDNS
   - job_name: tcp-prob
-    scrape_interval: 70s
+    scrape_interval: 10s
     metrics_path: /probe/tcp
     params:
       module: [tcp_connect]
@@ -90,7 +90,7 @@ scrape_configs: # module 類型請參考blackbox_exporter/blackbox.yaml
         check: tcp
       tag: tcp-test
   - job_name: icmp-prob
-    scrape_interval: 60s
+    scrape_interval: 10s
     metrics_path: /probe/icmp
     params:
       module: [icmp]
@@ -108,7 +108,7 @@ scrape_configs: # module 類型請參考blackbox_exporter/blackbox.yaml
         check: icmp
       tag: icmp-cloudflare
   - job_name: grpc-prob
-    scrape_interval: 50s
+    scrape_interval: 10s
     metrics_path: /probe/grpc
     params:
       module: [grpc]

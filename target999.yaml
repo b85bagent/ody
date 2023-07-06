@@ -9,8 +9,8 @@ scrape_configs: # module 類型請參考blackbox_exporter/blackbox.yaml
       - 1.1.1.1
       labels:
         target: testLex
-  - job_name: http-prob
-    scrape_interval: 30s
+  - job_name: http-prob-test
+    scrape_interval: 10s
     metrics_path: /probe/http
     params:
       module: [http_2xx]
