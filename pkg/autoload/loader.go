@@ -70,7 +70,7 @@ func AutoLoader(configFile, targetFile, blackboxFile string) {
 					cancelFunc() // 取消之前的协程
 				}
 
-				log.Println("启动新的handler.BlackboxProcess")
+				log.Println("啟動新的handler.BlackboxProcess")
 				ctx, cancelFunc = context.WithCancel(context.Background())
 				handler.BlackboxProcess(ctx, "target999.yaml", blackboxFile)
 
@@ -83,10 +83,10 @@ func AutoLoader(configFile, targetFile, blackboxFile string) {
 		}
 	}()
 
-	//Test reload use handler
+	//Test reload use
 	http.HandleFunc("/reload", func(w http.ResponseWriter, r *http.Request) {
 		reloadMutex.Lock()
-		// 当接收到GET请求时，发送一个信号到reload管道
+		// 當收到GET請求時，發送訊號到reload channel
 		reload <- true
 		w.Write([]byte("Reload signal sent!"))
 		reloadMutex.Unlock()
