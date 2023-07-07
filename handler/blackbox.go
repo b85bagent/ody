@@ -17,8 +17,8 @@ import (
 	bec "agent/blackbox_exporter/config"
 
 	logger "github.com/go-kit/log"
+	"golang.org/x/sync/semaphore"
 
-	"github.com/go-kit/log/level"
 	"github.com/prometheus/client_golang/prometheus"
 	"gopkg.in/yaml.v2"
 )
@@ -75,14 +75,14 @@ func targetConfig(targetFile string) (data map[string]interface{}, err error) {
 	return data, nil
 }
 
-//建立定時器
+//根據Job 建立定時器
 func TimeControl(ctx context.Context, data map[string]interface{}, sc *bec.SafeConfig) {
 
 	l = server.GetServerInstance().GetLogger()
 
 	scrapeConfigs, ok := data["scrape_configs"].([]interface{})
 	if !ok {
-		l.Println("Invalid YAML structure: 'scrape_configs' not found or has incorrect type")
+		log.Println("Invalid YAML structure: 'scrape_configs' not found or has incorrect type")
 		return
 	}
 
@@ -90,25 +90,25 @@ func TimeControl(ctx context.Context, data map[string]interface{}, sc *bec.SafeC
 
 		config, ok := scrapeConfig.(map[interface{}]interface{})
 		if !ok {
-			l.Println("Invalid scrape config found, skipping...")
+			log.Println("Invalid scrape config found, skipping...")
 			continue
 		}
 
 		jobName, ok := config["job_name"].(string)
 		if !ok {
-			l.Println("Invalid job name found, skipping...")
+			log.Println("Invalid job name found, skipping...")
 			continue
 		}
 
 		scrapeInterval, ok := config["scrape_interval"].(string)
 		if !ok {
-			l.Printf("Failed to parse scrape_interval for job '%s'", jobName)
+			log.Printf("Failed to parse scrape_interval for job '%s'", jobName)
 			continue
 		}
 
 		timeControl, err := time.ParseDuration(scrapeInterval)
 		if err != nil {
-			l.Printf("Failed to parse scrape_interval for job '%s': %v", jobName, err)
+			log.Printf("Failed to parse scrape_interval for job '%s': %v", jobName, err)
 			continue
 		}
 
@@ -136,50 +136,55 @@ func TimeControl(ctx context.Context, data map[string]interface{}, sc *bec.SafeC
 	}
 }
 
-//解析yaml檔後做probe
+//每個Job 解析yaml檔後做probe
 func dataResolve(config map[interface{}]interface{}, sc *bec.SafeConfig) {
+	var (
+		wg     sync.WaitGroup
+		result string
+		mutex  sync.RWMutex
+	)
+
 	startTime := time.Now()
 	l := server.GetServerInstance().GetLogger()
 
 	jobName, ok := config["job_name"].(string)
 	if !ok {
-		l.Println("Invalid job name found, skipping...")
+		log.Println("Invalid job name found, skipping...")
 		return
 	}
 
 	scrapeInterval, ok := config["scrape_interval"].(string)
 	if !ok {
-		l.Println("Invalid scrape interval found, skipping...")
+		log.Println("Invalid scrape interval found, skipping...")
 		return
 	}
 
 	metricsPath, ok := config["metrics_path"].(string)
 	if !ok {
-		l.Println("Invalid metrics path found, skipping...")
+		log.Println("Invalid metrics path found, skipping...")
 		return
 	}
-
-	// l.Println("Job Name:", jobName)
-	// l.Println("Scrape Interval:", scrapeInterval)
-	// l.Println("Metrics Path:", metricsPath)
 
 	params, ok := config["params"].(map[interface{}]interface{})
 	var paramsValue interface{}
 	if ok {
-		for param, values := range params {
-			l.Printf("----param:%s, values:%v\n", param, values)
+		for _, values := range params {
+			// l.Printf("----param:%s, values:%v\n", param, values)
 			paramsValue = values
 		}
 	}
 
 	staticConfigs, ok := config["static_configs"].([]interface{})
 	if ok {
-		var wg sync.WaitGroup
-		maxGoroutines := server.GetServerInstance().GetConst()["maxGoroutines"]
-		log.Println(maxGoroutines.(int))
-		goroutineLimiter := make(chan struct{}, maxGoroutines.(int))
+
+		m := server.GetServerInstance().GetConst()["maxGoroutines"] //取得最大可用的Goroutine數量
+		maxGoroutines := m.(int)
+		l.Println("maxGoroutines 數量: ", maxGoroutines)
+
+		sem := semaphore.NewWeighted(int64(maxGoroutines))
 
 		for i, staticConfig := range staticConfigs {
+
 			targetConfig, ok := staticConfig.(map[interface{}]interface{})
 			if !ok {
 				l.Println("Invalid target config found, skipping...")
@@ -197,24 +202,32 @@ func dataResolve(config map[interface{}]interface{}, sc *bec.SafeConfig) {
 			tag, tagOK := targetConfig["tag"].(string)
 
 			for _, target := range targets {
+
 				targetStr, ok := target.(string)
 				if !ok {
-					l.Println("Invalid target found, skipping...")
+					log.Println("Invalid target found, skipping...")
 					continue
 				}
 
 				wg.Add(1)
-				goroutineLimiter <- struct{}{} // 限制協程數量
+
+				//如果要超時機制，把這邊註解刪除
+				// ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				// defer cancel()
+
+				// 申請一個訊號，若沒有就會等待
+				if err := sem.Acquire(context.Background(), 1); err != nil {
+					l.Printf("Error Acquire : %v", err)
+					continue
+				}
 
 				go func(targetStr string, i int) {
-					log.Printf("第 %d 個 target: %s 開始", i, targetStr)
-					defer func() {
-						<-goroutineLimiter // 釋放協程數量
-						wg.Done()
-						log.Printf("第 %d 個 target: %s 結束", i, targetStr)
-					}()
 
-					// startTime := time.Now()
+					defer func() {
+						wg.Done()
+						// 釋放一個訊號空間
+						sem.Release(1)
+					}()
 
 					doc := make(map[string]interface{})
 
@@ -265,24 +278,30 @@ func dataResolve(config map[interface{}]interface{}, sc *bec.SafeConfig) {
 						return
 					}
 
-					// Write doc to OpenSearch
-					if errInsertOS := model.DataInsert(doc); errInsertOS != nil {
-						l.Printf("Error Bulk Insert, Job_Name: %s, target :%s, reason :%e", jobName, targetStr, errInsertOS)
-						doc = nil
-						return
-					}
+					mutex.Lock()
+					newResult := model.DataCompression(doc, result)
+					result += newResult
+					mutex.Unlock()
 
-					l.Printf("Job: %s , Target: %s 寫入openSearch成功", jobName, targetStr)
+					//reset map
+					doc = nil
 
-					doc = nil //reset map
 				}(targetStr, i)
+
 			}
 		}
-
 		wg.Wait() // 等待所有協程完成
+
+		if errInsertOS := model.BulkInsert(result); errInsertOS != nil {
+			log.Printf("Error Bulk Insert, Job_Name: %s, reason :%v", jobName, errInsertOS)
+			return
+		}
+
+		l.Printf("Job: %s 寫入openSearch成功", jobName)
+
 	}
-	log.Println("job: ", jobName, "的 Process 經過時間: ", time.Since(startTime))
-	log.Printf("Job '%s' 工作已完成", jobName)
+	l.Println("job: ", jobName, "的 Process 經過時間: ", time.Since(startTime))
+	l.Printf("Job '%s' 工作已完成", jobName)
 }
 
 //test use
@@ -304,7 +323,6 @@ func blackboxConfig(blackboxFile string) (*bec.SafeConfig, error) {
 	location := "./blackbox_exporter/" + blackboxFile
 
 	if err := sc.ReloadConfig(location, logger); err != nil {
-		level.Error(logger).Log("msg", "Error reloading config", "err", err)
 		return nil, err
 	}
 
@@ -426,16 +444,6 @@ func mapResolve(data map[string]interface{}, sc *bec.SafeConfig) {
 					}
 
 					l.Println("Json doc: ", string(r))
-
-					// -----TODO ----- Opensearch Insert
-
-					// // Write doc to OpenSearch
-					// // TODO: Implement OpenSearch write operation
-					// err = WriteToOpenSearch(doc)
-					// if err != nil {
-					// 	l.Printf("Failed to write result to OpenSearch: %v", err)
-					// 	continue
-					// }
 
 					doc = nil
 

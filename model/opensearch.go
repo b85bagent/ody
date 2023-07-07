@@ -3,6 +3,8 @@ package model
 import (
 	"agent/pkg/tool"
 	"agent/server"
+	"errors"
+	"io/ioutil"
 	"log"
 	"sync"
 
@@ -52,7 +54,7 @@ func DBinit() (r opensearchConfig) {
 
 	index, ok := server.GetServerInstance().GetConst()["index"]
 	if !ok {
-		log.Println("timeoutSetting Get failed")
+		log.Println("index Get failed")
 		return r
 	}
 
@@ -60,4 +62,49 @@ func DBinit() (r opensearchConfig) {
 	r.index = index.(string)
 
 	return r
+}
+
+//把data 轉成 字串
+func DataCompression(data map[string]interface{}, r string) string {
+
+	index, ok := server.GetServerInstance().GetConst()["index"]
+	if !ok {
+		log.Println("index Get failed")
+		return ""
+	}
+
+	result, err := os.BulkCreate(index.(string), data)
+	if err != nil {
+		log.Println("Bulk Create error: ", err)
+		return ""
+	}
+
+	r = r + result + "\n"
+
+	return result
+}
+
+func BulkInsert(data string) error {
+	dataInsertMutex.Lock()
+	defer dataInsertMutex.Unlock()
+
+	l = server.GetServerInstance().GetLogger()
+	client := DBinit()
+
+	result, err := os.BulkExecute(client.client, data)
+	if err != nil {
+		return err
+	}
+
+	if result.IsError() {
+		body, err := ioutil.ReadAll(result.Body)
+		if err != nil {
+			return err
+		}
+		// log.Println("Bulk Insert error: ", result.Body)
+		return errors.New(string(body))
+
+	}
+
+	return nil
 }

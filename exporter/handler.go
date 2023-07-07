@@ -26,27 +26,21 @@ func CheckModuleAndDoProbe(module string, data map[string]interface{}, target st
 //比對yaml檔內容，並且Probe
 func comparisonConfigAndDoProbe(data map[string]interface{}, m, target string, sc *bec.SafeConfig) (resultData map[string]interface{}, err error) {
 
-	var e error
-
 	//comparisonConfig
-	sc.Lock()
+	// sc.Lock()
 	module, ok := sc.C.Modules[m]
-	sc.Unlock()
+	// sc.Unlock()
 
 	if !ok {
 
-		e = errors.New("Module " + m + " not found")
-
-		return nil, e
+		return nil, errors.New("Module " + m + " not found")
 	}
 
 	prober, ok := Probers[module.Prober]
 
 	if !ok {
 
-		e = errors.New("Prober: " + module.Prober + "not found")
-
-		return nil, e
+		return nil, errors.New("Prober: " + module.Prober + "not found")
 	}
 
 	//doProbe
@@ -81,9 +75,10 @@ func doProbe(data map[string]interface{}, module bec.Module, prober bep.ProbeFn,
 		return nil, err
 	}
 
+	r := make(map[string]interface{})
+	nested := make(map[string]interface{})
+
 	for _, mf := range metrics {
-		r := make(map[string]interface{})
-		nested := make(map[string]interface{})
 		for i, m := range mf.Metric {
 			if len(mf.Metric[i].Label) != 0 {
 				name := *mf.Name
@@ -93,12 +88,8 @@ func doProbe(data map[string]interface{}, module bec.Module, prober bep.ProbeFn,
 				}
 
 				for _, v := range mf.Metric[i].Label {
-					// labelName := *v.Name
 					labelValue := *v.Value
-
 					nested[labelValue] = m.Gauge.Value
-					// r[labelName+"_"+fmt.Sprint(i)] = nested
-
 				}
 
 				r[*mf.Metric[i].Label[0].Name] = nested

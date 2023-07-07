@@ -13,5 +13,5 @@ const:
   httpRetrySecond: 5
   index: "lex-test12" #opensearch index
   debug: false
-  maxGoroutines: 100
+  maxGoroutines: 500
 
