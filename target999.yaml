@@ -8,18 +8,407 @@ scrape_configs: # module 類型請參考blackbox_exporter/blackbox.yaml
     - targets:
       - 1.1.1.1
       labels:
-        target: testLex
-  - job_name: http-prob-test
-    scrape_interval: 10s
-    metrics_path: /probe/http
-    params:
-      module: [http_2xx]
-    static_configs:
+        target: 1test
     - targets:
-      - https://tw.yahoo.com
+      - 8.8.8.8
       labels:
-        check: ping
-      tag: http_probe
+        target: 2test
+    - targets:
+      - 8.8.4.4
+      labels:
+        target: 3test
+    - targets:
+      - https://developers.cloudflare.com/1.1.1.1
+      labels:
+        target: 4test
+    - targets:
+      - 208.67.222.222
+      labels:
+        target: 5test
+    - targets:
+      - 208.67.220.220
+      labels:
+        target: 6test
+    - targets:
+      - https://www.opendns.com/
+      labels:
+        target: 7test
+    - targets:
+      - 1.1.1.1
+      labels:
+        target: 1test
+    - targets:
+      - 8.8.8.8
+      labels:
+        target: 2test
+    - targets:
+      - 8.8.4.4
+      labels:
+        target: 3test
+    - targets:
+      - https://developers.cloudflare.com/1.1.1.1
+      labels:
+        target: 4test
+    - targets:
+      - 208.67.222.222
+      labels:
+        target: 5test
+    - targets:
+      - 208.67.220.220
+      labels:
+        target: 6test
+    - targets:
+      - https://www.opendns.com/
+      labels:
+        target: 7test
+    - targets:
+      - 1.1.1.1
+      labels:
+        target: 1test
+    - targets:
+      - 8.8.8.8
+      labels:
+        target: 2test
+    - targets:
+      - 8.8.4.4
+      labels:
+        target: 3test
+    - targets:
+      - https://developers.cloudflare.com/1.1.1.1
+      labels:
+        target: 4test
+    - targets:
+      - 208.67.222.222
+      labels:
+        target: 5test
+    - targets:
+      - 208.67.220.220
+      labels:
+        target: 6test
+    - targets:
+      - https://www.opendns.com/
+      labels:
+        target: 7test
+    - targets:
+      - 1.1.1.1
+      labels:
+        target: 1test
+    - targets:
+      - 8.8.8.8
+      labels:
+        target: 2test
+    - targets:
+      - 8.8.4.4
+      labels:
+        target: 3test
+    - targets:
+      - https://developers.cloudflare.com/1.1.1.1
+      labels:
+        target: 4test
+    - targets:
+      - 208.67.222.222
+      labels:
+        target: 5test
+    - targets:
+      - 208.67.220.220
+      labels:
+        target: 6test
+    - targets:
+      - https://www.opendns.com/
+      labels:
+        target: 7test
+    - targets:
+      - 1.1.1.1
+      labels:
+        target: 1test
+    - targets:
+      - 8.8.8.8
+      labels:
+        target: 2test
+    - targets:
+      - 8.8.4.4
+      labels:
+        target: 3test
+    - targets:
+      - https://developers.cloudflare.com/1.1.1.1
+      labels:
+        target: 4test
+    - targets:
+      - 208.67.222.222
+      labels:
+        target: 5test
+    - targets:
+      - 208.67.220.220
+      labels:
+        target: 6test
+    - targets:
+      - https://www.opendns.com/
+      labels:
+        target: 7test
+    - targets:
+      - 1.1.1.1
+      labels:
+        target: 1test
+    - targets:
+      - 8.8.8.8
+      labels:
+        target: 2test
+    - targets:
+      - 8.8.4.4
+      labels:
+        target: 3test
+    - targets:
+      - https://developers.cloudflare.com/1.1.1.1
+      labels:
+        target: 4test
+    - targets:
+      - 208.67.222.222
+      labels:
+        target: 5test
+    - targets:
+      - 208.67.220.220
+      labels:
+        target: 6test
+    - targets:
+      - https://www.opendns.com/
+      labels:
+        target: 7test
+    - targets:
+      - 1.1.1.1
+      labels:
+        target: 1test
+    - targets:
+      - 8.8.8.8
+      labels:
+        target: 2test
+    - targets:
+      - 8.8.4.4
+      labels:
+        target: 3test
+    - targets:
+      - https://developers.cloudflare.com/1.1.1.1
+      labels:
+        target: 4test
+    - targets:
+      - 208.67.222.222
+      labels:
+        target: 5test
+    - targets:
+      - 208.67.220.220
+      labels:
+        target: 6test
+    - targets:
+      - https://www.opendns.com/
+      labels:
+        target: 7test
+    - targets:
+      - 1.1.1.1
+      labels:
+        target: 1test
+    - targets:
+      - 8.8.8.8
+      labels:
+        target: 2test
+    - targets:
+      - 8.8.4.4
+      labels:
+        target: 3test
+    - targets:
+      - https://developers.cloudflare.com/1.1.1.1
+      labels:
+        target: 4test
+    - targets:
+      - 208.67.222.222
+      labels:
+        target: 5test
+    - targets:
+      - 208.67.220.220
+      labels:
+        target: 6test
+    - targets:
+      - https://www.opendns.com/
+      labels:
+        target: 7test
+    - targets:
+      - 1.1.1.1
+      labels:
+        target: 1test
+    - targets:
+      - 8.8.8.8
+      labels:
+        target: 2test
+    - targets:
+      - 8.8.4.4
+      labels:
+        target: 3test
+    - targets:
+      - https://developers.cloudflare.com/1.1.1.1
+      labels:
+        target: 4test
+    - targets:
+      - 208.67.222.222
+      labels:
+        target: 5test
+    - targets:
+      - 208.67.220.220
+      labels:
+        target: 6test
+    - targets:
+      - https://www.opendns.com/
+      labels:
+        target: 7test
+    - targets:
+      - 1.1.1.1
+      labels:
+        target: 1test
+    - targets:
+      - 8.8.8.8
+      labels:
+        target: 2test
+    - targets:
+      - 8.8.4.4
+      labels:
+        target: 3test
+    - targets:
+      - https://developers.cloudflare.com/1.1.1.1
+      labels:
+        target: 4test
+    - targets:
+      - 208.67.222.222
+      labels:
+        target: 5test
+    - targets:
+      - 208.67.220.220
+      labels:
+        target: 6test
+    - targets:
+      - https://www.opendns.com/
+      labels:
+        target: 7test
+    - targets:
+      - 1.1.1.1
+      labels:
+        target: 1test
+    - targets:
+      - 8.8.8.8
+      labels:
+        target: 2test
+    - targets:
+      - 8.8.4.4
+      labels:
+        target: 3test
+    - targets:
+      - https://developers.cloudflare.com/1.1.1.1
+      labels:
+        target: 4test
+    - targets:
+      - 208.67.222.222
+      labels:
+        target: 5test
+    - targets:
+      - 208.67.220.220
+      labels:
+        target: 6test
+    - targets:
+      - https://www.opendns.com/
+      labels:
+        target: 7test
+    - targets:
+      - 1.1.1.1
+      labels:
+        target: 1test
+    - targets:
+      - 8.8.8.8
+      labels:
+        target: 2test
+    - targets:
+      - 8.8.4.4
+      labels:
+        target: 3test
+    - targets:
+      - https://developers.cloudflare.com/1.1.1.1
+      labels:
+        target: 4test
+    - targets:
+      - 208.67.222.222
+      labels:
+        target: 5test
+    - targets:
+      - 208.67.220.220
+      labels:
+        target: 6test
+    - targets:
+      - https://www.opendns.com/
+      labels:
+        target: 7test
+    - targets:
+      - 1.1.1.1
+      labels:
+        target: 1test
+    - targets:
+      - 8.8.8.8
+      labels:
+        target: 2test
+    - targets:
+      - 8.8.4.4
+      labels:
+        target: 3test
+    - targets:
+      - https://developers.cloudflare.com/1.1.1.1
+      labels:
+        target: 4test
+    - targets:
+      - 208.67.222.222
+      labels:
+        target: 5test
+    - targets:
+      - 208.67.220.220
+      labels:
+        target: 6test
+    - targets:
+      - https://www.opendns.com/
+      labels:
+        target: 7test
+    - targets:
+      - 1.1.1.1
+      labels:
+        target: 1test
+    - targets:
+      - 8.8.8.8
+      labels:
+        target: 2test
+    - targets:
+      - 8.8.4.4
+      labels:
+        target: 3test
+    - targets:
+      - https://developers.cloudflare.com/1.1.1.1
+      labels:
+        target: 4test
+    - targets:
+      - 208.67.222.222
+      labels:
+        target: 5test
+    - targets:
+      - 208.67.220.220
+      labels:
+        target: 6test
+    - targets:
+      - https://www.opendns.com/
+      labels:
+        target: 7test
+    
+  # - job_name: http-prob-test
+  #   scrape_interval: 10s
+  #   metrics_path: /probe/http
+  #   params:
+  #     module: [http_2xx]
+  #   static_configs:
+  #   - targets:
+  #     - https://tw.yahoo.com
+  #     labels:
+  #       check: ping
+  #     tag: http_probe
     # - targets:
     #   - 8.8.8.8
     #   - 8.8.4.4

@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"log"
 	"regexp"
+	"sync"
 	"time"
 
 	bec "agent/blackbox_exporter/config"
@@ -137,6 +138,7 @@ func TimeControl(ctx context.Context, data map[string]interface{}, sc *bec.SafeC
 
 //解析yaml檔後做probe
 func dataResolve(config map[interface{}]interface{}, sc *bec.SafeConfig) {
+	startTime := time.Now()
 	l := server.GetServerInstance().GetLogger()
 
 	jobName, ok := config["job_name"].(string)
@@ -164,7 +166,6 @@ func dataResolve(config map[interface{}]interface{}, sc *bec.SafeConfig) {
 	params, ok := config["params"].(map[interface{}]interface{})
 	var paramsValue interface{}
 	if ok {
-
 		for param, values := range params {
 			l.Printf("----param:%s, values:%v\n", param, values)
 			paramsValue = values
@@ -173,6 +174,11 @@ func dataResolve(config map[interface{}]interface{}, sc *bec.SafeConfig) {
 
 	staticConfigs, ok := config["static_configs"].([]interface{})
 	if ok {
+		var wg sync.WaitGroup
+		maxGoroutines := server.GetServerInstance().GetConst()["maxGoroutines"]
+		log.Println(maxGoroutines.(int))
+		goroutineLimiter := make(chan struct{}, maxGoroutines.(int))
+
 		for i, staticConfig := range staticConfigs {
 			targetConfig, ok := staticConfig.(map[interface{}]interface{})
 			if !ok {
@@ -191,83 +197,92 @@ func dataResolve(config map[interface{}]interface{}, sc *bec.SafeConfig) {
 			tag, tagOK := targetConfig["tag"].(string)
 
 			for _, target := range targets {
-
 				targetStr, ok := target.(string)
 				if !ok {
 					l.Println("Invalid target found, skipping...")
 					continue
 				}
 
-				startTime := time.Now()
+				wg.Add(1)
+				goroutineLimiter <- struct{}{} // 限制協程數量
 
-				doc := make(map[string]interface{})
+				go func(targetStr string, i int) {
+					log.Printf("第 %d 個 target: %s 開始", i, targetStr)
+					defer func() {
+						<-goroutineLimiter // 釋放協程數量
+						wg.Done()
+						log.Printf("第 %d 個 target: %s 結束", i, targetStr)
+					}()
 
-				module := paramsValue.([]interface{})[0] //module 初步討論只會有一個，所以寫死為0
+					// startTime := time.Now()
 
-				doc, errCMADP := exporter.CheckModuleAndDoProbe(module.(string), doc, targetStr, sc)
-				if errCMADP != nil {
-					l.Printf("第 %d 個CheckModuleAndDoProbe failed: %e", i, errCMADP)
-					continue
-				}
+					doc := make(map[string]interface{})
 
-				l.Println("target: ", targetStr, "的 Process 經過時間: ", time.Since(startTime))
+					module := paramsValue.([]interface{})[0] // module 初步討論只會有一個，所以寫死為0
 
-				// Write result to OpenSearch, considering labels and tags
-				doc["target"] = targetStr
-
-				if labelsOK {
-					d := make(map[string]interface{})
-					for key, value := range labelsRaw {
-						strKey, ok := key.(string)
-						if !ok {
-							l.Println("Invalid labelsNew type found, skipping...")
-							continue
-						}
-						d[strKey] = value
+					doc, errCMADP := exporter.CheckModuleAndDoProbe(module.(string), doc, targetStr, sc)
+					if errCMADP != nil {
+						l.Printf("第 %d 個CheckModuleAndDoProbe failed: %e", i, errCMADP)
+						return
 					}
-					doc["labels"] = d
-				}
 
-				if tagOK {
-					doc["tag"] = tag
-				}
+					// Write result to OpenSearch, considering labels and tags
+					doc["target"] = targetStr
 
-				doc["jobName"] = jobName
-				doc["params"] = paramsValue
-				doc["scrape_interval"] = scrapeInterval
-				doc["metrics_path"] = metricsPath
+					if labelsOK {
+						d := make(map[string]interface{})
+						for key, value := range labelsRaw {
+							strKey, ok := key.(string)
+							if !ok {
+								l.Println("Invalid labelsNew type found, skipping...")
+								continue
+							}
+							d[strKey] = value
+						}
+						doc["labels"] = d
+					}
 
-				/*---如果想看資料(json格式)，請把下面註解移除---
-				r, err := json.Marshal(doc)
-				if err != nil {
-					l.Println("json Marshal error: ", err)
-				}
+					if tagOK {
+						doc["tag"] = tag
+					}
 
-				l.Println("Json doc: ", string(r))
-				*/
+					doc["jobName"] = jobName
+					doc["params"] = paramsValue
+					doc["scrape_interval"] = scrapeInterval
+					doc["metrics_path"] = metricsPath
 
-				if doc["result"] == "Failed" {
-					l.Printf("target: %s Failed", targetStr)
-					continue
-				}
+					/*---如果想看資料(json格式)，請把下面註解移除---
+					r, err := json.Marshal(doc)
+					if err != nil {
+						l.Println("json Marshal error: ", err)
+					}
 
-				// Write doc to OpenSearch
-				if errInsertOS := model.DataInsert(doc); errInsertOS != nil {
-					l.Printf("Error Bulk Insert, Job_Name: %s, target :%s, reason :%e", jobName, targetStr, errInsertOS)
-					doc = nil
-					continue
-				}
+					l.Println("Json doc: ", string(r))
+					*/
 
-				l.Println("寫入openSearch成功")
+					if doc["result"] == "Failed" {
+						l.Printf("target: %s Failed", targetStr)
+						return
+					}
 
-				doc = nil //reset map
+					// Write doc to OpenSearch
+					if errInsertOS := model.DataInsert(doc); errInsertOS != nil {
+						l.Printf("Error Bulk Insert, Job_Name: %s, target :%s, reason :%e", jobName, targetStr, errInsertOS)
+						doc = nil
+						return
+					}
 
+					l.Printf("Job: %s , Target: %s 寫入openSearch成功", jobName, targetStr)
+
+					doc = nil //reset map
+				}(targetStr, i)
 			}
-
 		}
-	}
-	log.Printf("Job '%s' 工作已完成", jobName)
 
+		wg.Wait() // 等待所有協程完成
+	}
+	log.Println("job: ", jobName, "的 Process 經過時間: ", time.Since(startTime))
+	log.Printf("Job '%s' 工作已完成", jobName)
 }
 
 //test use
