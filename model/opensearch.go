@@ -93,8 +93,6 @@ func BulkInsert(data string) error {
 
 	result, err := os.BulkExecute(client.client, data)
 	if err != nil {
-		log.Println(data)
-		log.Println("BulkExecute err: ", err)
 		return err
 	}
 
