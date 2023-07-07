@@ -280,6 +280,9 @@ func dataResolve(config map[interface{}]interface{}, sc *bec.SafeConfig) {
 
 					mutex.Lock()
 					newResult := model.DataCompression(doc, result)
+					if jobName == "grpc-prob" {
+						log.Println("newResult: ", newResult)
+					}
 					result += newResult
 					mutex.Unlock()
 
@@ -292,16 +295,21 @@ func dataResolve(config map[interface{}]interface{}, sc *bec.SafeConfig) {
 		}
 		wg.Wait() // 等待所有協程完成
 
-		if errInsertOS := model.BulkInsert(result); errInsertOS != nil {
-			log.Printf("Error Bulk Insert, Job_Name: %s, reason :%v", jobName, errInsertOS)
+		if result == "" {
+			log.Printf("Job '%s' 所有target Probe都Failed，請確認Target 是否正確", jobName)
 			return
-		}
+		} else {
+			if errInsertOS := model.BulkInsert(result); errInsertOS != nil {
+				log.Printf("Error Bulk Insert, Job_Name: %s, reason :%v", jobName, errInsertOS)
+				return
+			}
 
-		l.Printf("Job: %s 寫入openSearch成功", jobName)
+			l.Printf("Job: %s 寫入openSearch成功", jobName)
+		}
 
 	}
 	l.Println("job: ", jobName, "的 Process 經過時間: ", time.Since(startTime))
-	l.Printf("Job '%s' 工作已完成", jobName)
+	log.Printf("Job '%s' 工作已完成", jobName)
 }
 
 //test use
