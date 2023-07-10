@@ -1,8 +1,8 @@
 package server
 
 import (
-	"agent/pkg/tool"
 	"log"
+	"remote_write/pkg/tool"
 	"sync"
 
 	"github.com/opensearch-project/opensearch-go"

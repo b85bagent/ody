@@ -1,11 +1,11 @@
 package model
 
 import (
-	"agent/pkg/tool"
-	"agent/server"
 	"errors"
 	"io/ioutil"
 	"log"
+	"remote_write/pkg/tool"
+	"remote_write/server"
 	"sync"
 
 	os "github.com/b85bagent/opensearch"

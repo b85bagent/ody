@@ -1,7 +1,7 @@
 package main
 
 import (
-	"agent/cmd"
+	"remote_write/cmd"
 )
 
 func main() {

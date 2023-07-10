@@ -21,6 +21,10 @@ func configInit(configFile string) (*Config, error) {
 		return nil, e
 	}
 
+	filePath := "./model/yaml/config/"
+
+	configFile = filePath + configFile
+
 	data, err := ioutil.ReadFile(configFile)
 	if err != nil {
 		return nil, err

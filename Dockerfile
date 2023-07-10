@@ -1,9 +1,11 @@
 FROM golang:1.18.1
 
-RUN cd /go/src
-RUN mkdir -p /go/src/agent	
-COPY ./ /go/src/agent	
-RUN cd /go/src/agent && export GO111MODULE=on && go build -race
-WORKDIR /go/src/agent	
+WORKDIR /go/src/remote_write
 
-CMD ["./agent"]
+COPY . .
+
+RUN export GO111MODULE=on && go build -race
+
+EXPOSE 8080
+
+CMD ["./remote_write"]

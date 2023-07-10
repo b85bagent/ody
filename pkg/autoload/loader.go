@@ -1,19 +1,28 @@
 package autoload
 
 import (
-	"agent/handler"
-	"agent/pkg/tool"
-	"agent/server"
-	"context"
+	"remote_write/handler"
+
 	"crypto/tls"
 	"log"
 	"net/http"
+	"remote_write/pkg/tool"
+	"remote_write/server"
 	"sync"
 
+	httpserver "remote_write/http_server"
+
+	"github.com/gin-gonic/gin"
 	"github.com/opensearch-project/opensearch-go"
 )
 
-func AutoLoader(configFile, targetFile, blackboxFile string) {
+var (
+	reload      chan bool
+	reloadMutex sync.Mutex
+	newReload   chan bool
+)
+
+func AutoLoader(configFile string) {
 
 	config, err := configInit(configFile)
 
@@ -52,49 +61,35 @@ func AutoLoader(configFile, targetFile, blackboxFile string) {
 	}
 
 	logger.Println("AutoLoader Success")
-	reload := make(chan bool, 1)
-	newReload := make(chan bool)
+	reload = make(chan bool, 1)
+	newReload = make(chan bool)
 
-	var cancelFunc context.CancelFunc
-	ctx, cancelFunc := context.WithCancel(context.Background())
-
-	go handler.BlackboxProcess(ctx, targetFile, blackboxFile)
-	var reloadMutex sync.Mutex
-
-	go func() {
-		for {
-			select {
-			case <-reload:
-				reloadMutex.Lock()
-				if cancelFunc != nil {
-					cancelFunc() // 取消之前的协程
-				}
-
-				log.Println("啟動新的handler.BlackboxProcess")
-				ctx, cancelFunc = context.WithCancel(context.Background())
-				handler.BlackboxProcess(ctx, "target999.yaml", blackboxFile)
-
-				defer cancelFunc()
-				reloadMutex.Unlock()
-			}
-			reloadMutex.Lock()
-			reload = newReload
-			reloadMutex.Unlock()
+	// run http
+	var httpSrv *http.Server
+	httpServerPort, ginOK := serverInstance.Constant["http_server_port"]
+	if ginOK {
+		addr := ":" + httpServerPort.(string)
+		gin.SetMode("release")
+		r := gin.New()
+		r.Use(gin.Recovery())
+		r, initRouterErr := httpserver.InitRouter(r)
+		if initRouterErr != nil {
+			log.Printf("initRouterErr: %v ", err)
+			panic("autoload fail")
 		}
-	}()
+		httpSrv = &http.Server{
+			Addr:    addr,
+			Handler: r,
+		}
+		go func() {
+			if serverRunErr := httpSrv.ListenAndServe(); serverRunErr != nil && serverRunErr != http.ErrServerClosed {
+				log.Printf("serverRunErr: %v", serverRunErr)
+				panic("autoload fail")
+			}
+		}()
+	}
 
-	//Test reload use
-	http.HandleFunc("/reload", func(w http.ResponseWriter, r *http.Request) {
-		reloadMutex.Lock()
-		// 當收到GET請求時，發送訊號到reload channel
-		reload <- true
-		w.Write([]byte("Reload signal sent!"))
-		reloadMutex.Unlock()
-	})
-
-	http.ListenAndServe(":8080", nil)
-
-	// server.SetServerInstance(serverInstance)
+	select {}
 
 }
 
