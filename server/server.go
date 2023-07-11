@@ -2,7 +2,7 @@ package server
 
 import (
 	"log"
-	"remote_write/pkg/tool"
+	"newProject/pkg/tool"
 	"sync"
 
 	"github.com/opensearch-project/opensearch-go"

@@ -8,7 +8,6 @@ import (
 func InitRouter(ginEngine *gin.Engine) (ginEngineDone *gin.Engine, err error) {
 
 	ginEngine.GET("/ping", ping)
-	ginEngine.POST("/write", write2)
 
 	ginEngine.Use()
 	ginEngineDone = ginEngine

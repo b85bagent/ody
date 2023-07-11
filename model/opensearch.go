@@ -1,11 +1,13 @@
 package model
 
 import (
+	"encoding/json"
 	"errors"
+	"io"
 	"io/ioutil"
 	"log"
-	"remote_write/pkg/tool"
-	"remote_write/server"
+	"newProject/pkg/tool"
+	"newProject/server"
 	"sync"
 
 	os "github.com/b85bagent/opensearch"
@@ -84,6 +86,18 @@ func DataCompression(data map[string]interface{}, r string) string {
 	return result
 }
 
+type Response struct {
+	Took   int  `json:"took"`
+	Errors bool `json:"errors"`
+	Items  []struct {
+		Create struct {
+			Index string `json:"_index"`
+			ID    string `json:"_id"`
+			// define other fields if needed
+		} `json:"create"`
+	} `json:"items"`
+}
+
 func BulkInsert(data string) error {
 	dataInsertMutex.Lock()
 	defer dataInsertMutex.Unlock()
@@ -96,15 +110,36 @@ func BulkInsert(data string) error {
 		return err
 	}
 
-	if result.IsError() {
+	response, err := getErrorsField(result.Body)
+	if err != nil {
+		return err
+	}
+
+	if response.Errors {
+
 		body, err := ioutil.ReadAll(result.Body)
 		if err != nil {
 			return err
 		}
+		defer result.Body.Close()
 		// log.Println("Bulk Insert error: ", result.Body)
 		return errors.New(string(body))
 
 	}
 
 	return nil
+}
+
+func getErrorsField(rc io.ReadCloser) (Response, error) {
+	var response Response
+
+	err := json.NewDecoder(rc).Decode(&response)
+	if err != nil {
+		return response, err
+	}
+
+	// Don't forget to close the reader
+	rc.Close()
+
+	return response, nil
 }

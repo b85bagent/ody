@@ -11,7 +11,7 @@ opensearch:
 
 const:
   httpRetrySecond: 5
-  index: "lex-test12" #opensearch index
+  index: "rw-test15" #opensearch index
   debug: false
   maxGoroutines: 500
   http_server_port: "8081"

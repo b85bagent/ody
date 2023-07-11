@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"log"
+	"newProject/pkg/autoload"
 	"os"
-	"remote_write/pkg/autoload"
 
 	"github.com/spf13/cobra"
 )
@@ -12,9 +12,9 @@ func Run() {
 	var configFile string
 
 	rootCmd := &cobra.Command{
-		Use:   "remote_write",
-		Short: "remote_write Application",
-		Long:  "remote_write using Cli for setting yaml configuration",
+		Use:   "newProject",
+		Short: "newProject Application",
+		Long:  "newProject using Cli for setting yaml configuration",
 		Run: func(cmd *cobra.Command, args []string) {
 			// 在這裡添加你的應用程式邏輯
 			// autoload.AutoLoader(configFile, targetFile, blackboxFile)

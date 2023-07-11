@@ -1,25 +1,18 @@
 package autoload
 
 import (
-	"remote_write/handler"
+	"newProject/handler"
 
 	"crypto/tls"
 	"log"
 	"net/http"
-	"remote_write/pkg/tool"
-	"remote_write/server"
-	"sync"
+	"newProject/pkg/tool"
+	"newProject/server"
 
-	httpserver "remote_write/http_server"
+	httpserver "newProject/http_server"
 
 	"github.com/gin-gonic/gin"
 	"github.com/opensearch-project/opensearch-go"
-)
-
-var (
-	reload      chan bool
-	reloadMutex sync.Mutex
-	newReload   chan bool
 )
 
 func AutoLoader(configFile string) {
@@ -60,10 +53,6 @@ func AutoLoader(configFile string) {
 		handlerServer.ServerStruct.SetOpensearch(opensearch)
 	}
 
-	logger.Println("AutoLoader Success")
-	reload = make(chan bool, 1)
-	newReload = make(chan bool)
-
 	// run http
 	var httpSrv *http.Server
 	httpServerPort, ginOK := serverInstance.Constant["http_server_port"]
@@ -87,7 +76,12 @@ func AutoLoader(configFile string) {
 				panic("autoload fail")
 			}
 		}()
+	} else {
+		log.Println("http_server_port is not set")
+		return
 	}
+
+	logger.Println("AutoLoader Success")
 
 	select {}
 

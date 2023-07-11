@@ -1,7 +1,7 @@
 package main
 
 import (
-	"remote_write/cmd"
+	"newProject/cmd"
 )
 
 func main() {

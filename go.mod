@@ -1,14 +1,11 @@
-module remote_write
+module newProject
 
 go 1.18
 
 require (
 	github.com/b85bagent/opensearch v0.0.0-20230705091207-02a9be16e49d
 	github.com/gin-gonic/gin v1.9.1
-	github.com/gogo/protobuf v1.3.2
 	github.com/opensearch-project/opensearch-go v1.1.0
-	github.com/prometheus/common v0.44.0
-	github.com/prometheus/prometheus v0.45.0
 	github.com/spf13/cobra v1.7.0
 	github.com/streadway/amqp v1.1.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -26,7 +23,6 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
-	github.com/kr/pretty v0.3.1 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect

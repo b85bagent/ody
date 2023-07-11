@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"remote_write/server"
+	"newProject/server"
 )
 
 type Server struct {
