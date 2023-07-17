@@ -42,9 +42,10 @@ func AutoLoader(configFile string) {
 
 	handlerServer.ServerStruct.SetLogger(logger)
 
-	if len(config.Opensearch) > 0 {
+	if len(config.Opensearch.Opensearch) > 0 {
+		handlerServer.ServerStruct.OpensearchIndex = config.Opensearch.Index
 		logger.Println("Auto loading opensearch")
-		opensearch, err := initOpensearch(config.Opensearch)
+		opensearch, err := initOpensearch(config.Opensearch.Opensearch)
 		if err != nil {
 			log.Println(err)
 			panic("initOpensearch fail")

@@ -54,14 +54,10 @@ func DBinit() (r opensearchConfig) {
 		return r
 	}
 
-	index, ok := server.GetServerInstance().GetConst()["index"]
-	if !ok {
-		log.Println("index Get failed")
-		return r
-	}
+	index := server.GetServerInstance().GetOpensearchIndex()
 
 	r.client = client
-	r.index = index.(string)
+	r.index = index
 
 	return r
 }
@@ -69,13 +65,9 @@ func DBinit() (r opensearchConfig) {
 //把data 轉成 字串
 func DataCompression(data map[string]interface{}, r string) string {
 
-	index, ok := server.GetServerInstance().GetConst()["index"]
-	if !ok {
-		log.Println("index Get failed")
-		return ""
-	}
+	index := server.GetServerInstance().GetOpensearchIndex()
 
-	result, err := os.BulkCreate(index.(string), data)
+	result, err := os.BulkCreate(index, data)
 	if err != nil {
 		log.Println("Bulk Create error: ", err)
 		return ""

@@ -1,8 +1,13 @@
 package autoload
 
 type Config struct {
-	Opensearch map[string]OpensearchConfig `yaml:"opensearch"`
-	Const      map[string]interface{}
+	Opensearch OpensearchSettings     `yaml:"opensearch"`
+	Const      map[string]interface{} `yaml:"const"`
+}
+
+type OpensearchSettings struct {
+	Index      string                      `yaml:"index"`
+	Opensearch map[string]OpensearchConfig `yaml:",inline"`
 }
 
 type OpensearchConfig struct {

@@ -21,6 +21,7 @@ type Server struct {
 	// httpClient    map[string]httpClient.Methods
 	// gracefulCtx   *context.Context
 	opensearchClient map[string]*opensearch.Client
+	OpensearchIndex  string
 	logger           *tool.Logger
 }
 
@@ -51,7 +52,7 @@ func (s *Server) GetOpensearch() map[string]*opensearch.Client {
 }
 
 func (s *Server) GetOpensearchIndex() string {
-	return s.GetOpensearchIndex()
+	return s.OpensearchIndex
 }
 
 func (s *Server) SetConst(Const map[string]interface{}) {

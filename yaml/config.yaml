@@ -1,0 +1,23 @@
+#Opensearch 
+opensearch:
+  index: "lex-test12" #opensearch index
+  One:
+    host: ["https://10.11.233.102:9200"]
+    username: "admin"
+    password: "systex123!"
+
+#RabbitMQ
+
+#Const
+
+const:
+  httpRetrySecond: 5
+  debug: false
+  maxGoroutines: 500
+  http_server_port: "8081"
+
+mq:
+  One:
+  host: []
+  username: ""
+  password: ""
