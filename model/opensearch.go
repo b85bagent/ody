@@ -1,9 +1,7 @@
 package model
 
 import (
-	"encoding/json"
 	"errors"
-	"io"
 	"io/ioutil"
 	"log"
 	"newProject/pkg/tool"
@@ -91,6 +89,7 @@ type Response struct {
 }
 
 func BulkInsert(data string) error {
+
 	dataInsertMutex.Lock()
 	defer dataInsertMutex.Unlock()
 
@@ -99,39 +98,23 @@ func BulkInsert(data string) error {
 
 	result, err := os.BulkExecute(client.client, data)
 	if err != nil {
+		log.Println("BulkExecute error: ", err)
 		return err
 	}
 
-	response, err := getErrorsField(result.Body)
-	if err != nil {
-		return err
-	}
+	defer result.Body.Close()
 
-	if response.Errors {
-
+	if result.IsError() {
 		body, err := ioutil.ReadAll(result.Body)
 		if err != nil {
+			log.Println("result.IsError ReadAll error: ", err)
+
 			return err
 		}
-		defer result.Body.Close()
 		// log.Println("Bulk Insert error: ", result.Body)
 		return errors.New(string(body))
 
 	}
 
 	return nil
-}
-
-func getErrorsField(rc io.ReadCloser) (Response, error) {
-	var response Response
-
-	err := json.NewDecoder(rc).Decode(&response)
-	if err != nil {
-		return response, err
-	}
-
-	// Don't forget to close the reader
-	rc.Close()
-
-	return response, nil
 }
