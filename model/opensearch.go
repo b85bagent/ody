@@ -61,17 +61,11 @@ func DBinit() (r opensearchConfig) {
 }
 
 //把data 轉成 字串
-func DataCompression(data map[string]interface{}, r string) string {
+func DataCompression(data map[string]interface{}) string {
 
 	index := server.GetServerInstance().GetOpensearchIndex()
 
-	result, err := os.BulkCreate(index, data)
-	if err != nil {
-		log.Println("Bulk Create error: ", err)
-		return ""
-	}
-
-	r = r + result + "\n"
+	result := os.DataCompression(data, index)
 
 	return result
 }

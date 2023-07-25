@@ -3,7 +3,7 @@ module newProject
 go 1.18
 
 require (
-	github.com/b85bagent/opensearch v0.0.0-20230705091207-02a9be16e49d
+	github.com/b85bagent/opensearch v0.0.0-20230725082315-6ae12ac54638
 	github.com/gin-gonic/gin v1.9.1
 	github.com/opensearch-project/opensearch-go v1.1.0
 	github.com/spf13/cobra v1.7.0
@@ -29,6 +29,9 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/tidwall/gjson v1.14.4 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	golang.org/x/arch v0.3.0 // indirect
