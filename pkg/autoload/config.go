@@ -21,7 +21,7 @@ func configInit(configFile string) (*Config, error) {
 		return nil, e
 	}
 
-	filePath := "./model/yaml/config/"
+	filePath := "./yaml/"
 
 	configFile = filePath + configFile
 
