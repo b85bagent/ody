@@ -1,7 +1,9 @@
 package autoload
 
 import (
+	"context"
 	"newProject/handler"
+	"time"
 
 	"crypto/tls"
 	"log"
@@ -82,7 +84,28 @@ func AutoLoader(configFile string) {
 		return
 	}
 
+	// Main context
+	ctx := tool.WaitShutdown(func() {})
+	handlerServer.ServerStruct.SetGracefulCtx(&ctx)
+
 	logger.Println("AutoLoader Success")
+
+	// background
+	bgCtx, bgCancel := context.WithCancel(ctx)
+	defer bgCancel()
+
+	go handlerServer.Background(bgCtx)
+
+	select {
+	case s := <-ctx.Done():
+		logger.Printf("shutdownObserver:", s)
+	}
+
+	var countdownTime = 5
+	for t := countdownTime; t > 0; t-- {
+		log.Printf("%d秒後退出", t)
+		time.Sleep(time.Second * 1)
+	}
 
 	select {}
 

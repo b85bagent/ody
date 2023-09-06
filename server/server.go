@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"log"
 	"newProject/pkg/tool"
 	"sync"
@@ -23,6 +24,7 @@ type Server struct {
 	opensearchClient map[string]*opensearch.Client
 	OpensearchIndex  string
 	logger           *tool.Logger
+	gracefulCtx      *context.Context
 }
 
 func NewServer() (newServerObject *Server, err error) {
@@ -69,4 +71,8 @@ func (s *Server) SetLogger(logger *tool.Logger) {
 
 func (s *Server) GetLogger() *tool.Logger {
 	return s.logger
+}
+
+func (s *Server) SetGracefulCtx(c *context.Context) {
+	s.gracefulCtx = c
 }
