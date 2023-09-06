@@ -3,6 +3,9 @@ package autoload
 import (
 	"context"
 	"newProject/handler"
+	"newProject/model"
+	"strings"
+	"sync"
 	"time"
 
 	"crypto/tls"
@@ -16,6 +19,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/opensearch-project/opensearch-go"
 )
+
+var wg sync.WaitGroup
 
 func AutoLoader(configFile string) {
 
@@ -38,14 +43,22 @@ func AutoLoader(configFile string) {
 		ServerStruct: serverInstance,
 	}
 
+	insertInterval := server.GetServerInstance().Constant["insert_interval"].(int)
+
+	flushInterval := time.Duration(insertInterval) * time.Second
+
+	bufferSize := server.GetServerInstance().Constant["bufferSize"].(int)
+
+	HandlerServer := handler.New(serverInstance)
+
 	debugMode := getDebugSetting()
 
 	logger := tool.NewLogger(debugMode)
 
-	handlerServer.ServerStruct.SetLogger(logger)
+	HandlerServer.ServerStruct.SetLogger(logger)
 
 	if len(config.Opensearch.Opensearch) > 0 {
-		handlerServer.ServerStruct.OpensearchIndex = config.Opensearch.Index
+		HandlerServer.ServerStruct.OpensearchIndex = config.Opensearch.Index
 		logger.Println("Auto loading opensearch")
 		opensearch, err := initOpensearch(config.Opensearch.Opensearch)
 		if err != nil {
@@ -53,7 +66,7 @@ func AutoLoader(configFile string) {
 			panic("initOpensearch fail")
 		}
 
-		handlerServer.ServerStruct.SetOpensearch(opensearch)
+		HandlerServer.ServerStruct.SetOpensearch(opensearch)
 	}
 
 	// run http
@@ -64,7 +77,7 @@ func AutoLoader(configFile string) {
 		gin.SetMode("release")
 		r := gin.New()
 		r.Use(gin.Recovery())
-		r, initRouterErr := httpserver.InitRouter(r)
+		r, initRouterErr := httpserver.InitRouter(r, HandlerServer)
 		if initRouterErr != nil {
 			log.Printf("initRouterErr: %v ", err)
 			panic("autoload fail")
@@ -94,20 +107,67 @@ func AutoLoader(configFile string) {
 	bgCtx, bgCancel := context.WithCancel(ctx)
 	defer bgCancel()
 
-	go handlerServer.Background(bgCtx)
+	wg.Add(1) // 加1
+	go func() {
+		defer wg.Done() // 當 goroutine 結束時減1
+		handlerServer.Background(bgCtx)
+	}()
+
+	go func() {
+		ticker := time.NewTicker(flushInterval)
+		defer ticker.Stop()
+
+		buffer := make([]string, 0, bufferSize)
+
+		for {
+			select {
+			case item := <-HandlerServer.BufferChan:
+				logger.Println("收到item 寫入buffer")
+				buffer = append(buffer, item)
+
+				if len(buffer) >= bufferSize {
+					log.Println("***buffer > bufferSize ，提前開始執行寫入清空***")
+
+					err := model.BulkInsert(strings.Join(buffer, "\n"))
+					if err != nil {
+						log.Println("Error performing bulk insert: ", err)
+					}
+
+					buffer = nil // clear the batch
+				}
+
+			case <-ticker.C:
+				if len(buffer) > 0 {
+					err := model.BulkInsert(strings.Join(buffer, "\n"))
+					if err != nil {
+						log.Println("Error performing bulk insert: ", err)
+					}
+					logger.Println("*********", len(buffer), "筆資料入opensearch 寫入成功*********")
+
+					buffer = nil // clear the batch
+				}
+			}
+		}
+	}()
 
 	select {
 	case s := <-ctx.Done():
 		logger.Printf("shutdownObserver:", s)
 	}
 
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := httpSrv.Shutdown(shutdownCtx); err != nil {
+		log.Fatalf("Server Shutdown Failed:%+v", err)
+	}
+
+	wg.Wait()
+
 	var countdownTime = 5
 	for t := countdownTime; t > 0; t-- {
 		log.Printf("%d秒後退出", t)
 		time.Sleep(time.Second * 1)
 	}
-
-	select {}
 
 }
 
