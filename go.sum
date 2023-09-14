@@ -1,8 +1,6 @@
 github.com/aws/aws-sdk-go v1.42.27/go.mod h1:OGr6lGMAKGlG9CVrYnWYDKIyb829c6EVBRjxqjmPepc=
-github.com/b85bagent/opensearch v0.0.0-20230705091207-02a9be16e49d h1:GRMQMWnlqtfP+9ENfRJbck1pz9W29VCIYZEeZ43+0nU=
-github.com/b85bagent/opensearch v0.0.0-20230705091207-02a9be16e49d/go.mod h1:VgtKSxqxSTPXsLU8uWbBXTc6D68fe0qbI3RwS5Qcq5M=
-github.com/b85bagent/opensearch v0.0.0-20230725082315-6ae12ac54638 h1:QGUlVkc0dFuvwSSefa7HMl7iE6+0jGZncJGBN+hlITQ=
-github.com/b85bagent/opensearch v0.0.0-20230725082315-6ae12ac54638/go.mod h1:I6Uv+n7EfXda4R2gO8SS8nR9tkXghMETeeA3RqXf81I=
+github.com/b85bagent/opensearch v0.0.0-20230914031925-6512ef36008f h1:XJmsVbzPBoqL+iTtADw1JwIQTNSiyJZzYGxaCFmLKuo=
+github.com/b85bagent/opensearch v0.0.0-20230914031925-6512ef36008f/go.mod h1:z0/jNZ2gWZWbnubJ2eywbOr074bk0Nara1ESjljOFVY=
 github.com/bytedance/sonic v1.5.0/go.mod h1:ED5hyg4y6t3/9Ku1R6dU/4KyJ48DZ4jPhfY1O2AihPM=
 github.com/bytedance/sonic v1.9.1 h1:6iJ6NqdoxCDr6mbY8h18oSO+cShGSMRGCEo7F2h0x8s=
 github.com/bytedance/sonic v1.9.1/go.mod h1:i736AoUSYt75HyZLoJW9ERYxcy6eaN6h4BZXU064P/U=

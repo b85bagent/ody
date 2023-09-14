@@ -3,7 +3,7 @@ module newProject
 go 1.18
 
 require (
-	github.com/b85bagent/opensearch v0.0.0-20230725082315-6ae12ac54638
+	github.com/b85bagent/opensearch v0.0.0-20230914031925-6512ef36008f
 	github.com/gin-gonic/gin v1.9.1
 	github.com/opensearch-project/opensearch-go v1.1.0
 	github.com/spf13/cobra v1.7.0

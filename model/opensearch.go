@@ -1,8 +1,6 @@
 package model
 
 import (
-	"errors"
-	"io/ioutil"
 	"log"
 	"newProject/pkg/tool"
 	"newProject/server"
@@ -60,7 +58,7 @@ func DBinit() (r opensearchConfig) {
 	return r
 }
 
-//把data 轉成 字串
+// 把data 轉成 字串
 func DataCompression(data map[string]interface{}) string {
 
 	index := server.GetServerInstance().GetOpensearchIndex()
@@ -90,25 +88,12 @@ func BulkInsert(data string) error {
 	l = server.GetServerInstance().GetLogger()
 	client := DBinit()
 
-	result, err := os.BulkExecute(client.client, data)
+	err := os.BulkInsert(data, client.client)
 	if err != nil {
 		log.Println("BulkExecute error: ", err)
 		return err
 	}
 
-	defer result.Body.Close()
-
-	if result.IsError() {
-		body, err := ioutil.ReadAll(result.Body)
-		if err != nil {
-			log.Println("result.IsError ReadAll error: ", err)
-
-			return err
-		}
-		// log.Println("Bulk Insert error: ", result.Body)
-		return errors.New(string(body))
-
-	}
-
 	return nil
+
 }
