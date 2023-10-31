@@ -23,8 +23,18 @@ type Server struct {
 	// gracefulCtx   *context.Context
 	opensearchClient map[string]*opensearch.Client
 	OpensearchIndex  string
+	RabbitMQConfig   RabbitMQArg
 	logger           *tool.Logger
 	gracefulCtx      *context.Context
+}
+
+type RabbitMQArg struct {
+	Host               []string `yaml:"host"`
+	Username           string   `yaml:"username"`
+	Password           string   `yaml:"password"`
+	RabbitMQExchange   string   `yaml:"appname"`
+	RabbitMQRoutingKey string   `yaml:"savedsearch"`
+	Enable             bool     `yaml:"enable"`
 }
 
 func NewServer() (newServerObject *Server, err error) {

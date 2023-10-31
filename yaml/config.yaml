@@ -7,17 +7,21 @@ opensearch:
     password: "systex123!"
 
 #RabbitMQ
+rabbitMQ:
+  One:
+    host: ["10.11.233.203:5672"] # RabbitMQ host
+    username: "admin"
+    password: "admin123"
+    RabbitMQExchange: "format" # Exchange
+    RabbitMQRoutingKey: "format" # RoutingKey
+    enable: false
+
 
 #Const
-
 const:
   httpRetrySecond: 5
   debug: false
   maxGoroutines: 500
   http_server_port: "8081"
-
-mq:
-  One:
-  host: []
-  username: ""
-  password: ""
+  insert_interval: 15
+  bufferSize: 500

@@ -4,6 +4,7 @@ import (
 	"context"
 	"newProject/handler"
 	"newProject/model"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -57,6 +58,8 @@ func AutoLoader(configFile string) {
 
 	HandlerServer.ServerStruct.SetLogger(logger)
 
+	enableCheck := false
+
 	if len(config.Opensearch.Opensearch) > 0 {
 		HandlerServer.ServerStruct.OpensearchIndex = config.Opensearch.Index
 		logger.Println("Auto loading opensearch")
@@ -67,6 +70,26 @@ func AutoLoader(configFile string) {
 		}
 
 		HandlerServer.ServerStruct.SetOpensearch(opensearch)
+		enableCheck = true
+	}
+
+	if len(config.RabbitMQ.RabbitMQ) > 0 {
+
+		for _, v := range config.RabbitMQ.RabbitMQ {
+
+			if v.Enable {
+				handlerServer.ServerStruct.RabbitMQConfig.Host = v.Host
+				handlerServer.ServerStruct.RabbitMQConfig.Username = v.Username
+				handlerServer.ServerStruct.RabbitMQConfig.Password = v.Password
+				handlerServer.ServerStruct.RabbitMQConfig.RabbitMQExchange = v.RabbitMQExchange
+				handlerServer.ServerStruct.RabbitMQConfig.RabbitMQRoutingKey = v.RabbitMQRoutingKey
+				handlerServer.ServerStruct.RabbitMQConfig.Enable = v.Enable
+				logger.Println("Auto loading RabbitMQ")
+				enableCheck = true
+			}
+
+		}
+
 	}
 
 	// run http
@@ -95,6 +118,11 @@ func AutoLoader(configFile string) {
 	} else {
 		log.Println("http_server_port is not set")
 		return
+	}
+
+	if !enableCheck {
+		log.Println("沒有執行任何操作設定，請確認config 內enable部分是否有設定 true")
+		os.Exit(0)
 	}
 
 	// Main context

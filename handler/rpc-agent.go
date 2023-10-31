@@ -5,8 +5,9 @@ import (
 )
 
 type Server struct {
-	ServerStruct *server.Server
-	BufferChan   chan string
+	ServerStruct   *server.Server
+	BufferChan     chan string
+
 }
 
 func New(s *server.Server) *Server {
@@ -18,3 +19,4 @@ func New(s *server.Server) *Server {
 		BufferChan:   make(chan string, bufferSize),
 	}
 }
+
