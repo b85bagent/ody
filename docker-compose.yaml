@@ -2,7 +2,7 @@ version: '3'
 services:
   app:
     restart: always
-    image: newproject:1
+    image: newProject:1
     logging:
       driver: "json-file"
       options:

@@ -6,7 +6,7 @@ CommitHash=$(git rev-parse --short HEAD)
 CommitDate=$(git log -1 --format=%ai $(git describe --tags 2>/dev/null || echo HEAD))
 
 # Build the Docker image
-docker build -f Dockerfile -t newproject:1 . \
+docker build -f Dockerfile -t newProject:1 . \
     --build-arg TAG=$Tag \
     --build-arg COMMITHASH=$CommitHash \
     --build-arg COMMITDATE="$CommitDate"
