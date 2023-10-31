@@ -1,144 +1,123 @@
 package handler
 
 import (
-	"fmt"
-	"io/ioutil"
+	"encoding/json"
 	"log"
+	"newProject/server"
+	"os"
+	"sync"
 
+	"github.com/b85bagent/rabbitmq"
 	"github.com/streadway/amqp"
 )
 
-//連接資訊格式：amqp://帳號:密碼@RabbitMQ伺服器地址:Port (預設端口為5672)
+var wg sync.WaitGroup
 
-const MQUrl = "amqp://lex:s850429s@127.0.0.1:5672/Lex"
+// 開啟rabbitMQ監聽
+func ListenRabbitMQ(reload chan bool) error {
+	rabbitMQ := server.GetServerInstance().GetRabbitMQArg()
 
-//rabbitMQ結構體
-type RabbitMQ struct {
-	conn      *amqp.Connection
-	channel   *amqp.Channel
-	QueueName string //隊列名稱
-	Exchange  string //交換機名稱
-	Key       string //bind Key 名稱
-	MQurl     string //連接資訊
+	for _, v := range rabbitMQ.RabbitMQQueue {
+		rabbitMQArg := getRabbitMQArg(rabbitMQ, v)
+		localResponse := initRPCResponse(rabbitMQArg)
+		wg.Add(1)
+		go handleRabbitMQMessage(rabbitMQArg, localResponse, reload)
+	}
+
+	wg.Wait()
+	return nil
 }
 
-//創建結構體實例
-func NewRabbitMQ(queueName string, exchange string, key string) *RabbitMQ {
-	return &RabbitMQ{QueueName: queueName, Exchange: exchange, Key: key, MQurl: MQUrl}
-}
-
-//斷開channel和connection
-func (r *RabbitMQ) ReleaseRes() {
-	r.channel.Close()
-	r.conn.Close()
-}
-
-//錯誤處理函數
-func (r *RabbitMQ) failOnErr(err error, message string) {
-	if err != nil {
-		log.Fatalf("%s:%s", message, err)
-		panic(fmt.Sprintf("%s:%s", message, err))
+func getRabbitMQArg(rabbitMQ server.RabbitMQArg, queueName string) rabbitmq.RabbitMQArg {
+	return rabbitmq.RabbitMQArg{
+		Host:               rabbitMQ.Host[0],
+		Username:           rabbitMQ.Username,
+		Password:           rabbitMQ.Password,
+		RabbitMQExchange:   rabbitMQ.RabbitMQExchange,
+		RabbitMQRoutingKey: rabbitMQ.RabbitMQRoutingKey,
+		RabbitMQQueue:      queueName,
 	}
 }
 
-//創建簡單模式下RabbitMQ實例
-func NewRabbitMQSimple(queueName string) *RabbitMQ {
-	//創建RabbitMQ實例
-	rabbitmq := NewRabbitMQ(queueName, "", "")
-
-	var err error
-
-	//創建 connection
-	rabbitmq.conn, err = amqp.Dial(rabbitmq.MQurl)
-	rabbitmq.failOnErr(err, "failed to connect rabb"+
-		"itmq!")
-
-	//創建 channel
-	rabbitmq.channel, err = rabbitmq.conn.Channel()
-	rabbitmq.failOnErr(err, "failed to open a channel")
-
-	return rabbitmq
+func initRPCResponse(arg rabbitmq.RabbitMQArg) rabbitmq.RPCResponse {
+	t := make(map[string]interface{})
+	t["message"] = "Agent get MQ message Successfully"
+	return rabbitmq.RPCResponse{
+		Status:     rabbitmq.Response_Success,
+		StatusCode: rabbitmq.Response_Success_Code,
+		Response:   t,
+		Queue:      arg.RabbitMQQueue,
+	}
 }
 
-//Simple Mode Producer
-func (r *RabbitMQ) PublishSimple(message string) {
-	//1.申請隊列，如果隊列不存在會自動創建，存在則跳過創建
-	_, err := r.channel.QueueDeclare(
-		r.QueueName, //隊列名
-		false,       //是否持久化
-		false,       //是否自動刪除
-		false,       //是否具有排他性
-		false,       //是否阻塞處理
-		nil,         //額外的屬性
-	)
-	if err != nil {
-		log.Println(err)
-	}
-	//調用channel發送消息到隊列中
-	r.channel.Publish(
-		r.Exchange,
-		r.QueueName,
-		false, //如果為true，根據自身exchange類型和routekey規則無法找到符合條件的隊列會把消息返還給發送者
-		false, //如果為true，當exchange發送消息到隊列後發現隊列上沒有消費者，則會把消息返還給發送者
-		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte(message),
-		})
-}
+// rabbitmq handle
+func handleRabbitMQMessage(arg rabbitmq.RabbitMQArg, response rabbitmq.RPCResponse, reload chan bool) {
+	defer wg.Done()
 
-//Simple Mode Consumer
-func (r *RabbitMQ) ConsumeSimple() {
-	//1.申請隊列，如果隊列不存在會自動創建，存在則跳過創建
-	q, err := r.channel.QueueDeclare(
-		r.QueueName, //隊列名
-		false,       //是否持久化
-		false,       //是否自動刪除
-		false,       //是否具有排他性
-		false,       //是否阻塞處理
-		nil,         //額外的屬性
-	)
-	if err != nil {
-		log.Println(err)
-	}
+	localResponse := response // 使用本地副本，避免數據競爭
 
-	//接收消息
-	msgs, err := r.channel.Consume(
-		q.Name, // queue
-		"",     // consumer 用來區分多個消費者
-		true,   // auto-ack 是否自動應答
-		false,  // exclusive 是否獨有
-		false,  // no-local 設置為true，表示不能將同一個Connection中生產者發送的消息傳遞給這個Connection中 的消費者
-		false,  // no-wait 列是否阻塞
-		nil,    // 額外的屬性
-	)
-	if err != nil {
-		log.Println(err)
-	}
+	err := rabbitmq.ListenRabbitMQUsingRPC(arg, localResponse, func(msg amqp.Delivery, ch *amqp.Channel, localResponse rabbitmq.RPCResponse) error {
+		//handle and do something here
 
-	forever := make(chan bool)
-	//消息邏輯處理
-	go func() {
-		for d := range msgs {
-			//處理yaml to 本地端file
-			err := SaveYAMLToFile(d.Body, "./test.yaml")
-			if err != nil {
-				log.Println("save yaml file error:", err)
-			}
-
+		// response
+		err := replyToPublisher(localResponse, ch, msg)
+		if err != nil {
+			log.Printf("Error replyToPublisher : %s", err)
+			return err
 		}
-	}()
 
-	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
-	<-forever
+		return nil
+	})
 
+	if err != nil {
+		log.Println("ListenRabbitMQUsingRPC ERROR: ", err)
+	}
+}
+
+// 將回應發送回去
+func replyToPublisher(localResponse rabbitmq.RPCResponse, ch *amqp.Channel, msg amqp.Delivery) error {
+
+	response, err := json.Marshal(localResponse)
+	if err != nil {
+		log.Printf("Error marshaling to JSON: %v\n", err)
+		return err
+	}
+
+	// 發送回應到 reply_to 隊列
+	errReplay := ch.Publish(
+		"",          // exchange
+		msg.ReplyTo, // routing key
+		false,       // mandatory
+		false,       // immediate
+		amqp.Publishing{
+			ContentType:   "application/json",
+			CorrelationId: msg.CorrelationId,
+			Body:          response,
+		})
+	if errReplay != nil {
+		log.Printf("Failed to publish a message Replay: %s", errReplay)
+		return errReplay
+	}
+
+	// 發送 ack 確認消息已經被處理
+	err = msg.Ack(false)
+	if err != nil {
+		log.Printf("Error acknowledging message : %s", err)
+		return err
+	}
+
+	return nil
 }
 
 func SaveYAMLToFile(content []byte, filepath string) error {
-	err := ioutil.WriteFile(filepath, []byte(content), 0644)
+	l := server.GetServerInstance().GetLogger()
+
+	err := os.WriteFile(filepath, []byte(content), 0644)
 	if err != nil {
 		log.Println("無法寫入檔案：", err)
 		return err
 	}
-	log.Println("已成功儲存 YAML 檔案：", filepath)
+
+	l.Println("已成功儲存 YAML 檔案：", filepath)
 	return nil
 }
