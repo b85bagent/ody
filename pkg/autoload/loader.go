@@ -83,6 +83,7 @@ func AutoLoader(configFile string) {
 				handlerServer.ServerStruct.RabbitMQConfig.Password = v.Password
 				handlerServer.ServerStruct.RabbitMQConfig.RabbitMQExchange = v.RabbitMQExchange
 				handlerServer.ServerStruct.RabbitMQConfig.RabbitMQRoutingKey = v.RabbitMQRoutingKey
+				handlerServer.ServerStruct.RabbitMQConfig.RabbitMQQueue = v.RabbitMQQueue
 				handlerServer.ServerStruct.RabbitMQConfig.Enable = v.Enable
 				logger.Println("Auto loading RabbitMQ")
 				enableCheck = true

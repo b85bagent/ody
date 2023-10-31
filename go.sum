@@ -1,6 +1,8 @@
 github.com/aws/aws-sdk-go v1.42.27/go.mod h1:OGr6lGMAKGlG9CVrYnWYDKIyb829c6EVBRjxqjmPepc=
 github.com/b85bagent/opensearch v0.0.0-20230914031925-6512ef36008f h1:XJmsVbzPBoqL+iTtADw1JwIQTNSiyJZzYGxaCFmLKuo=
 github.com/b85bagent/opensearch v0.0.0-20230914031925-6512ef36008f/go.mod h1:z0/jNZ2gWZWbnubJ2eywbOr074bk0Nara1ESjljOFVY=
+github.com/b85bagent/rabbitmq v0.0.0-20231023053859-4aa988f34010 h1:S4qGlU/x80BmnU9f8qQwnt2JrTiTVfooveiXL6XdOtU=
+github.com/b85bagent/rabbitmq v0.0.0-20231023053859-4aa988f34010/go.mod h1:d5jTXO3MEOJmeb+Bp502M9DE5oUOv1x44uQyG3zpTAg=
 github.com/bytedance/sonic v1.5.0/go.mod h1:ED5hyg4y6t3/9Ku1R6dU/4KyJ48DZ4jPhfY1O2AihPM=
 github.com/bytedance/sonic v1.9.1 h1:6iJ6NqdoxCDr6mbY8h18oSO+cShGSMRGCEo7F2h0x8s=
 github.com/bytedance/sonic v1.9.1/go.mod h1:i736AoUSYt75HyZLoJW9ERYxcy6eaN6h4BZXU064P/U=

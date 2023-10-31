@@ -34,6 +34,7 @@ type RabbitMQArg struct {
 	Password           string   `yaml:"password"`
 	RabbitMQExchange   string   `yaml:"appname"`
 	RabbitMQRoutingKey string   `yaml:"savedsearch"`
+	RabbitMQQueue      []string `yaml:"RabbitMQQueue"`
 	Enable             bool     `yaml:"enable"`
 }
 
@@ -85,4 +86,8 @@ func (s *Server) GetLogger() *tool.Logger {
 
 func (s *Server) SetGracefulCtx(c *context.Context) {
 	s.gracefulCtx = c
+}
+
+func (s *Server) GetRabbitMQArg() RabbitMQArg {
+	return s.RabbitMQConfig
 }

@@ -27,5 +27,6 @@ type RabbitMQConfig struct {
 	Password           string   `yaml:"password"`
 	RabbitMQExchange   string   `yaml:"RabbitMQExchange"`
 	RabbitMQRoutingKey string   `yaml:"RabbitMQRoutingKey"`
+	RabbitMQQueue      []string `yaml:"RabbitMQQueue"`
 	Enable             bool     `yaml:"enable"`
 }

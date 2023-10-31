@@ -14,6 +14,7 @@ rabbitMQ:
     password: "admin123"
     RabbitMQExchange: "format" # Exchange
     RabbitMQRoutingKey: "format" # RoutingKey
+    RabbitMQQueue: ["rpc-modules","rpc-scrape-configs"] # Queue
     enable: false
 
 
